@@ -71,8 +71,12 @@ main{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;padding:18px}
   </aside>
 </main>
 
-<py-config>packages = []</py-config>
-<py-script>
+<script type="py-config">
+{
+  "packages": []
+}
+</script>
+<script type="py">
 import math, random, json
 from dataclasses import dataclass, field
 from typing import Dict
@@ -197,7 +201,7 @@ def storyboard(topic, speed=1.0):
     actions=[f"{p.role} {p.name.split('#')[0]} ({p.mbti}) stimmt über die Aufnahme eines vergessenen Bereichs ab." for p in polit_core]
     scenes.append({"phase":"P2","title":"Erweiterung & Abstimmung","text":"Koordinationsstelle verschickt Einladungen per E-Mail und veröffentlicht das Thema. "+vt,"info":["Thema wird auf Plattform veröffentlicht.","Koordinationsstelle verschickt Einladungen/E-Mails.","„Vergessene“ Bereiche können mit 2/3 ergänzt werden."],"agent_actions":actions,"vote":vote,"next_delay_ms":dur(210000)})
     polit, experts = pick_members(sc, pool, reg)
-    explines=[f"{d}: "+", ".join(f\"{e.name.split('#')[0]} ({e.mbti})\" for e in lst) for d,lst in experts.items()]
+   explines = [f"{d}: " + ", ".join(f"{e.name.split('#')[0]} ({e.mbti})" for e in lst) for d, lst in experts.items()]
     scenes.append({"phase":"P3","title":"Gremiumszusammensetzung","text":"Geladene Bereiche benennen ihre Vertreter. Interessenkonflikte werden offengelegt.","info":["Standard: max. zwei Vertreter pro Bereich.","Sonderfälle per 2/3-Mehrheit.","Interessenkonflikte werden offengelegt."],"agent_actions":["Zusammensetzung (max. 2/Bereich):"]+explines,"next_delay_ms":dur(210000)})
     ev,ac,lg,im,co,va,summary = deliberate(experts)
     expert_sample=[e for lst in experts.values() for e in lst]; random.shuffle(expert_sample); expert_sample=expert_sample[:8]
