@@ -1,304 +1,388 @@
 <!doctype html>
 <html lang="de">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Policy-Sim (Normalbetrieb)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Policy-Sim (Normalbetrieb)</title>
 
-<link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Policy-Sim&quot;,&quot;short_name&quot;:&quot;PolicySim&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230b0d12&quot;,&quot;theme_color&quot;:&quot;%230b0d12&quot;}">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-  
-<script type="module" src="https://pyscript.net/releases/2024.5.1/core.js"></script>
-<style>
-:root{color-scheme:dark;--bg:#0b0d12;--panel:#121521;--muted:#9aa4b2;--accent:#5b8cff;--ok:#21d07a;--warn:#ffb020;--bad:#ff5c5c}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#e6e9ef;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{padding:14px 18px;border-bottom:1px solid #1b2030;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-header h1{font-size:18px;margin:0}
-select,button,input{background:#0f1320;color:#e6e9ef;border:1px solid #1f2638;padding:10px 12px;border-radius:10px}
-button.primary{background:var(--accent);border:0;color:#fff;font-weight:700}
-main{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;padding:18px}
-.panel{background:var(--panel);border:1px solid #1b2030;border-radius:12px;padding:16px}
-.phasebar{display:flex;gap:8px;flex-wrap:wrap}
-.chip{padding:6px 10px;border-radius:999px;border:1px solid #2a3248;color:var(--muted);font-size:12px}
-.chip.active{background:#1a2140;color:#fff;border-color:#3b4b7a}
-.scene-title{font-weight:700;margin:0 0 8px 0}
-.scene-text{color:#d9dde6;margin:0 0 8px 0}
-.actions{margin-top:10px;display:grid;gap:6px}
-.act{padding:10px;background:#121829;border:1px solid #1d2740;border-radius:10px;font-size:14px}
-.infobox h4{margin:0 0 8px 0;font-size:14px;color:#c7cede}
-.infobox ul{margin:0;padding-left:16px;color:#c7cede}
-.metrics{display:grid;gap:8px}
-.barwrap{background:#0f1320;border:1px solid #1f2638;border-radius:8px;height:24px;position:relative;overflow:hidden}
-.bar{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,#3b7cff,#21d07a);transition:width .8s}
-.lab{position:absolute;left:10px;top:2px;font-size:12px;color:#c7cede}
-.val{position:absolute;right:10px;top:2px;font-size:12px;color:#c7cede}
-.vote{margin-top:12px;padding:10px;border:1px dashed #2b3550;border-radius:10px}
-.muted{color:var(--muted)}
-@media(max-width:900px){main{grid-template-columns:1fr}}
-</style>
+  <!-- PyScript 2024.x (richtige Tags) -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css" />
+  <script defer src="https://pyscript.net/releases/2024.5.1/core.js"></script>
+
+  <style>
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#121521; --muted:#9aa4b2; --accent:#3478f6; }
+    *{ box-sizing:border-box }
+    body{ margin:0; background:var(--bg); color:#e6e9ef; font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial }
+    header{ padding:14px 18px; border-bottom:1px solid #1b2030; display:flex; flex-wrap:wrap; gap:10px; align-items:center }
+    header h1{ font-size:18px; margin:0 8px 0 0 }
+    select,button,input{ background:#0f1320; color:#e6e9ef; border:1px solid #1f2638; padding:8px 10px; border-radius:8px }
+    button.primary{ background:var(--accent); border:0; color:#fff; font-weight:700 }
+    main{ display:grid; grid-template-columns:1.25fr .75fr; gap:18px; padding:18px; }
+    .panel{ background:var(--panel); border:1px solid #1b2030; border-radius:12px; padding:14px }
+    .phasebar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
+    .chip{ padding:6px 10px; border-radius:999px; border:1px solid #1b2030; background:#121829; color:#b8c2d3; font-size:12px }
+    .chip.active{ background:#1a2140; color:#fff }
+    .scene-title{ font-weight:700; margin:0 0 8px 0 }
+    .scene-text{ color:#d9dde6; margin:0 0 8px 0 }
+    .actions{ margin-top:10px; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px }
+    .act{ padding:10px; background:#121829; border:1px solid #1b2030; border-radius:10px; cursor:pointer; text-align:center }
+    .infobox h4{ margin:0 0 8px 0; font-size:14px }
+    .infobox ul{ margin:0; padding-left:16px; color:#b8c2d3 }
+    .metrics{ display:grid; gap:8px; margin-top:8px }
+    .barwrap{ background:#0f1320; border:1px solid #1b2030; border-radius:10px; position:relative; height:16px }
+    .bar{ position:absolute; left:0; top:0; bottom:0 }
+    .lab{ position:absolute; left:10px; top:2px; font-size:12px; color:#9aa4b2 }
+    .val{ position:absolute; right:10px; top:2px; font-size:12px; color:#9aa4b2 }
+    .vote{ margin-top:12px; padding:10px; border:1px dashed #2a3450; border-radius:10px }
+    @media (max-width:860px){ main{ grid-template-columns:1fr } }
+  </style>
 </head>
 <body>
-<header>
-  <h1>Policy-Sim (Normalbetrieb)</h1>
-  <select id="topic"></select>
-  <select id="speed">
-    <option value="0.5">Cinematic (~4 min/Phase)</option>
-    <option value="1.0" selected>Normal (~2 min/Phase)</option>
-    <option value="2.0">Schnell (~1 min/Phase)</option>
-  </select>
-  <button id="start" class="primary">Start</button>
-  <button id="skip">Szene überspringen</button>
-  <button id="restart">Neues Thema</button>
-  <span id="timer" class="muted"></span>
-</header>
+  <header>
+    <h1>Policy-Sim (Normalbetrieb)</h1>
 
-<main>
-  <section class="panel">
-    <div class="phasebar" id="phasebar"></div>
-    <h2 class="scene-title" id="sceneTitle">Willkommen</h2>
-    <p class="scene-text" id="sceneText">Wähle ein Thema und starte den Probedurchlauf.</p>
-    <div class="actions" id="actions"></div>
-    <div class="vote" id="vote" style="display:none"></div>
-  </section>
-  <aside class="panel">
-    <div class="infobox">
-      <h4>Info</h4>
-      <ul id="info"></ul>
-    </div>
-    <div class="metrics" id="metrics" style="margin-top:14px;"></div>
-  </aside>
-</main>
+    <select id="speed">
+      <option value="0.5">Cinematic (~4 min/Phase)</option>
+      <option value="1.0" selected>Normal (~2 min/Phase)</option>
+      <option value="2.0">Schnell (~1 min/Phase)</option>
+    </select>
 
-<script type="py-config">
-{
-  "packages": []
-}
-</script>
-<script type="py">
-import math, random, json
-from dataclasses import dataclass, field
-from typing import Dict
+    <button id="start" class="primary">Start</button>
+    <button id="skip">Szene überspringen</button>
+    <button id="restart">Neues Thema</button>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="phasebar" id="phasebar"></div>
+      <h2 class="scene-title" id="sceneTitle">Willkommen</h2>
+      <p class="scene-text" id="sceneText">Wähle ein Thema und starte den Probedurchlauf.</p>
+      <div class="actions" id="actions"></div>
+      <div class="vote" id="vote" style="display:none"></div>
+    </section>
+
+    <aside class="panel">
+      <div class="infobox">
+        <h4>Info</h4>
+        <ul id="info"></ul>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div style="margin-top:10px">
+        <label style="display:block;font-size:12px;color:#9aa4b2;margin-bottom:6px">Thema</label>
+        <select id="topic" style="width:100%"></select>
+      </div>
+    </aside>
+  </main>
+
+  <!-- PyScript config must use the 2024.x tag syntax -->
+  <script type="py-config">
+packages = []
+  </script>
+
+  <script type="py">
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
 from js import document, window
+import random, math
 
-def clamp(x,a=0,b=1): return max(a,min(b,x))
-def logistic(z): return 1/(1+math.exp(-z))
-def beta(a=2,b=2): import random as R; return R.betavariate(a,b)
-def mean(xs): return sum(xs)/len(xs) if xs else 0.5
-
+# ---------- Daten ----------
 MBTI = ["ENTJ","INTJ","ENTP","INTP","ENFJ","INFJ","ENFP","INFP","ESTJ","ISTJ","ESFJ","ISFJ","ESTP","ISTP","ESFP","ISFP"]
-DISC = ["Volkswirtschaft","Public Health","Epidemiologie","Klimawissenschaft","Energiesysteme","Verfassungsrecht","EU-Recht","Ethik/Grundrechte","Daten-/IT-Sicherheit","Implementation/Verwaltung","Statistik/Methoden","Wissenschaftskommunikation","Stadtplanung","Verkehr","Finanzen/Haushalt","Sozialpolitik"]
-PROBLEMS = {
- "KI-Regulierung in Behörden": ["Daten-/IT-Sicherheit","EU-Recht","Implementation/Verwaltung","Statistik/Methoden","Wissenschaftskommunikation","Ethik/Grundrechte"],
- "Energiewende & Netzausbau": ["Energiesysteme","Klimawissenschaft","Verfassungsrecht","Finanzen/Haushalt","Implementation/Verwaltung","Stadtplanung","Wissenschaftskommunikation"],
- "Wohnungsbau & Mieten": ["Finanzen/Haushalt","Stadtplanung","Verfassungsrecht","Sozialpolitik","Implementation/Verwaltung","Wissenschaftskommunikation"],
- "Gesundheitsreform (Personal/Strukturen)": ["Public Health","Epidemiologie","Finanzen/Haushalt","EU-Recht","Implementation/Verwaltung","Wissenschaftskommunikation","Ethik/Grundrechte"],
- "Bahn- & Infrastruktur-Sanierung": ["Verkehr","Finanzen/Haushalt","Implementation/Verwaltung","EU-Recht","Energiesysteme","Wissenschaftskommunikation"],
- "Cybersicherheit Staat & Kritische Infrastruktur": ["Daten-/IT-Sicherheit","Verfassungsrecht","Implementation/Verwaltung","Statistik/Methoden","Wissenschaftskommunikation"],
- "Klimaanpassung (Hitze/Flut)": ["Klimawissenschaft","Public Health","Stadtplanung","Finanzen/Haushalt","EU-Recht","Implementation/Verwaltung","Wissenschaftskommunikation","Ethik/Grundrechte"],
- "Schule & digitale Ausstattung": ["Implementation/Verwaltung","Daten-/IT-Sicherheit","Finanzen/Haushalt","Verfassungsrecht","Wissenschaftskommunikation","Sozialpolitik"],
- "Migration & Integration": ["Sozialpolitik","Finanzen/Haushalt","EU-Recht","Public Health","Wissenschaftskommunikation","Ethik/Grundrechte","Implementation/Verwaltung"]
+
+DISC = ["Volkswirtschaft","Public Health","Epidemiologie","Klimawissenschaft",
+        "Energiesysteme","Recht","Ethik/Grundrechte","Daten-/IT-Sicherheit",
+        "Implementation/Verwaltung","Statistik/Methoden","Sozialpolitik",
+        "Verkehr/Infrastruktur","Kommunikation","EU-Recht"]
+
+# Themen (Schlüssel erscheinen im Dropdown)
+PROBLEMS: Dict[str, List[str]] = {
+    "KI-Regulierung in Behörden": ["Daten-/IT-Sicherheit","EU-Recht","Implementation/Verwaltung","Statistik/Methoden"],
+    "Energiewende & Netzausbau": ["Energiesysteme","Klimawissenschaft","Recht","Verkehr/Infrastruktur"],
+    "Wohnungsbau & Mieten": ["Volkswirtschaft","Sozialpolitik","Recht","Statistik/Methoden"],
+    "Gesundheitsreform": ["Public Health","Epidemiologie","Volkswirtschaft","Sozialpolitik"],
+    "Cybersicherheit Staat": ["Daten-/IT-Sicherheit","Recht","Implementation/Verwaltung","Kommunikation"],
+    "Schule & Digitalisierung": ["Implementation/Verwaltung","Daten-/IT-Sicherheit","Statistik/Methoden","Sozialpolitik"],
 }
-PINFO = {
- "P1": ["Nur FachBEREICHE werden zuerst festgelegt – keine Personen.","Jeder begründete Relevanzhinweis → Bereich aufnehmen.","Politik moderiert."],
- "P2": ["Thema wird auf Plattform veröffentlicht.","Koordinationsstelle verschickt Einladungen/E-Mails.","„Vergessene“ Bereiche können mit 2/3 ergänzt werden."],
- "P3": ["Standard: max. zwei Vertreter pro Bereich.","Sonderfälle per 2/3-Mehrheit.","Interessenkonflikte werden offengelegt."],
- "P4": ["Runde 1: Evidenz, Wechselwirkungen, Rückfragen.","Runde 2: Umsetzung, Hindernisse, Alternativen.","Minority-Report möglich; Politik moderiert."],
- "P5": ["Politik fasst zusammen und entscheidet.","Abweichungen müssen begründet werden.","Verständliche Kurzfassung wird veröffentlicht."],
- "END": ["Höhere Qualität durch Expertise","Hindernisse früh erkennen","Entlastung der Politik (Moderation)","Transparenz & Begründungspflicht","Flexibel statt Dauerbürokratie"]
+
+PINFO: Dict[str, List[str]] = {
+    "P1": ["Nur FachBEREICHE werden zuerst festgelegt, nicht konkrete Namen."],
+    "P2": ["Thema wird auf Plattform veröffentlicht; Expert*innen bewerben sich."],
+    "P3": ["Standard: max. zwei Vertreter pro Bereich; Diversität wird beachtet."],
+    "P4": ["Runde 1: Evidenz, Wechselwirkungen, Nebenfolgen; Runde 2: Umsetzung."],
+    "P5": ["Politische Abwägung und Entscheidung mit Begründung."],
 }
-@dataclass
-class Traits:
-    O: float; C: float; E: float; A: float; N: float; nfc: float; rho: float; lam: float; morals: Dict[str,float]
-def draw_traits():
-    morals = {k:beta(2,2) for k in ["care","fairness","authority","liberty","loyalty"]}
-    return Traits(beta(2,2),beta(2,2),beta(2,2),beta(2,2),beta(2,2),beta(2,2),random.uniform(0.3,0.9),random.uniform(1.3,2.5),morals)
+
 @dataclass
 class Agent:
-    name:str; role:str|None=None; disc:str|None=None
-    mbti:str=field(default_factory=lambda: random.choice(MBTI))
-    t:Traits=field(default_factory=draw_traits)
-    stress:float=field(default_factory=lambda: beta(2,3)); vis:float=field(default_factory=lambda: beta(2,2))
-    def weights(self):
-        w_eff=clamp(0.4*self.t.nfc+0.2*(1-self.t.A)+(0.1 if self.mbti[2]=='T' else 0))
-        w_acc=clamp(0.3*self.t.A+0.2*self.t.E+(0.15 if self.mbti[2]=='F' else 0))
-        w_leg=clamp(0.3*self.t.C+0.1*self.t.O+(0.05 if self.mbti[2]=='T' else 0))
-        w_impl=clamp(0.3*self.t.C+0.2*(1-self.t.O)+(0.1 if self.mbti[3]=='J' else 0))
-        w_cost=clamp(0.25*self.t.rho+0.15*(self.t.lam-1)/2.0)
-        w_val=clamp(0.2*self.t.morals["care"]+0.2*self.t.morals["fairness"]+0.1*self.t.nfc); return w_eff,w_acc,w_leg,w_impl,w_cost,w_val
-    def vote_theta(self,ev,ac,lg,im,co,va):
-        w_eff,w_acc,w_leg,w_impl,w_cost,w_val=self.weights()
-        z=w_eff*ev+w_acc*ac+w_leg*lg+w_impl*im-w_cost*co+w_val*va
-        z-=0.4*self.stress*self.t.rho
-        if self.role: z+=0.08*self.vis*w_acc
-        return 1/(1+math.exp(-1.5*z+0.5))
-def political_pool():
-    names=[("Regierungsführung",1),("Oppositionsführung",1),("Ausschussvorsitz",1),("Koordinationsstelle",1),("Regierungsfraktion",6),("Oppositionsfraktion",6)]
-    pool=[]
-    for role,cnt in names:
-        for i in range(cnt): pool.append(Agent(f"{role}#{i+1}",role=role))
+    name: str
+    role: str  # "Regierung", "Opposition", "Zivil", "Wirtschaft", "Verwaltung", "Experte"
+    disc: str
+    mbti: str
+
+def mk_name(prefix: str, idx: int) -> str:
+    return f"{prefix}#{idx}"
+
+def political_pool() -> List[Agent]:
+    pool: List[Agent] = []
+    roles = [("Regierungsführung","Regierung",4),
+             ("Oppositionsführung","Opposition",4),
+             ("Wirtschaft","Wirtschaft",6),
+             ("Zivilgesellschaft","Zivil",6),
+             ("Verwaltung","Verwaltung",6)]
+    for pref, role, n in roles:
+        for i in range(1, n+1):
+            disc = random.choice(DISC)
+            pool.append(Agent(mk_name(pref,i), role, disc, random.choice(MBTI)))
     return pool
-def expert_registry():
-    reg={d:[] for d in DISC}
+
+def expert_registry() -> Dict[str, List[Agent]]:
+    reg: Dict[str, List[Agent]] = {}
     for d in DISC:
-        for i in range(8): reg[d].append(Agent(f"{d}Expert#{i+1}",disc=d))
+        reg[d] = [Agent(mk_name("Expertin", i), "Experte", d, random.choice(MBTI)) for i in range(1, 6)]
     return reg
-def compose(topic):
-    discs=list(dict.fromkeys(PROBLEMS.get(topic,["Implementation/Verwaltung","Finanzen/Haushalt","Verfassungsrecht","Wissenschaftskommunikation"])))
-    return {"topic":topic,"discs":discs}
-def expand_with_vote(sc, polit):
-    missing=[d for d in DISC if d not in sc["discs"]]
-    if missing and random.random()<0.6:
-        sug=random.choice(missing); yes=0
-        for p in polit:
-            bias=0.1+0.4*p.t.O+(0.1 if p.mbti[1]=="N" else 0)-(0.05 if p.mbti[3]=="J" else 0)
-            if random.random()<0.5+bias: yes+=1
-        res="YES" if yes/len(polit)>=(2/3) else "NO"
-        if res=="YES": sc["discs"].append(sug)
-        return sc, {"suggested":sug,"vote":res,"tally":f"{yes}/{len(polit)}"}
-    return sc, None
-def pick_members(sc, pool, reg):
-    core=[next(a for a in pool if a.role==r).__dict__ for r in ["Regierungsführung","Oppositionsführung","Ausschussvorsitz","Koordinationsstelle"]]
-    polit=[Agent(a["name"],role=a["role"]) for a in core]
-    import random as R
-    gov=[a for a in pool if a.role=="Regierungsfraktion"]; R.shuffle(gov)
-    opp=[a for a in pool if a.role=="Oppositionsfraktion"]; R.shuffle(opp)
-    polit+= [Agent(gov[0].name,role=gov[0].role),Agent(gov[1].name,role=gov[1].role),Agent(opp[0].name,role=opp[0].role),Agent(opp[1].name,role=opp[1].role)]
-    experts={}
-    for d in sc["discs"]:
-        cand=reg[d][:]; R.shuffle(cand); experts[d]=[Agent(cand[0].name,disc=d),Agent(cand[1].name,disc=d)]
-    return polit, experts
-def deliberate(experts):
-    comp={"ev":[], "acc":[], "leg":[], "impl":[], "cost":[], "val":[]}
-    for d,lst in experts.items():
-        for e in lst:
-            t=e.t; n=random.gauss(0,0.05)
-            if d in ["Statistik/Methoden","Epidemiologie","Public Health","Klimawissenschaft"]: comp["ev"].append(clamp(0.6*t.nfc+0.2*(1-e.stress)+n))
-            if d in ["Wissenschaftskommunikation","Sozialpolitik"]: comp["acc"].append(clamp(0.5*t.E+0.3*t.A+n))
-            if d in ["Verfassungsrecht","EU-Recht"]: comp["leg"].append(clamp(0.6*t.C+0.2*(1-t.N)+n))
-            if d in ["Implementation/Verwaltung","Energiesysteme","Stadtplanung","Verkehr","Daten-/IT-Sicherheit"]: comp["impl"].append(clamp(0.6*t.C+0.2*(1-t.O)+n))
-            if d in ["Volkswirtschaft","Finanzen/Haushalt"]: comp["cost"].append(clamp(0.6*t.rho+0.2*t.lam/3+n))
-            if d in ["Ethik/Grundrechte","Sozialpolitik"]: comp["val"].append(clamp(0.5*t.morals["care"]+0.3*t.morals["fairness"]+n))
-    ev,ac,lg,im,co,va=mean(comp["ev"]),mean(comp["acc"]),mean(comp["leg"]),mean(comp["impl"]),mean(comp["cost"]),mean(comp["val"])
-    return ev,ac,lg,im,co,va, f"Evidenz={ev:.2f}, Akzeptanz={ac:.2f}, Recht={lg:.2f}, Umsetzung={im:.2f}, Kosten={co:.2f}, Wertefit={va:.2f}"
-def decide(polit, m):
-    ev,ac,lg,im,co,va=m[:6]; votes={}
-    for p in polit:
-        th=p.vote_theta(ev,ac,lg,im,co,va)
-        votes[p.name]={"role":p.role,"mbti":p.mbti,"theta":th,"vote":"YES" if th>=0.5 else "NO"}
-    yes=sum(1 for v in votes.values() if v["vote"]=="YES"); tot=len(votes)
-    decision="ADOPT" if yes/tot>=(2/3) else ("REVISE" if yes/tot>=0.5 else "REJECT")
-    return decision, f"{yes}/{tot} Stimmen, 2/3-Schwelle → {decision}", votes
-def storyboard(topic, speed=1.0):
-    pool=political_pool(); reg=expert_registry(); sc=compose(topic)
-    polit_core=[Agent("Regierungsführung#1","Regierungsführung"),Agent("Oppositionsführung#1","Oppositionsführung"),Agent("Ausschussvorsitz#1","Ausschussvorsitz"),Agent("Koordinationsstelle#1","Koordinationsstelle")]
-    scenes=[]; dur=lambda ms:int(ms/speed)
-    actions=[f"{p.role} {p.name.split('#')[0]} ({p.mbti}) definiert das Thema & sammelt Relevanzhinweise." for p in polit_core]
-    scenes.append({"phase":"P1","title":"Thema & erste Bereichsdefinition","text":f"Das Thema „{sc['topic']}“ wird festgelegt. Betroffene Bereiche werden skizziert.","info":["Nur FachBEREICHE werden zuerst festgelegt – keine Personen.","Jeder begründete Relevanzhinweis → Bereich aufnehmen.","Politik moderiert."],"agent_actions":actions,"next_delay_ms":dur(180000)})
-    sc, vote = expand_with_vote(sc, polit_core)
-    vt = f"Abstimmung über zusätzlichen Bereich: {vote['suggested']} → {vote['vote']} ({vote['tally']})" if vote else "Keine zusätzlichen Bereiche vorgeschlagen."
-    actions=[f"{p.role} {p.name.split('#')[0]} ({p.mbti}) stimmt über die Aufnahme eines vergessenen Bereichs ab." for p in polit_core]
-    scenes.append({"phase":"P2","title":"Erweiterung & Abstimmung","text":"Koordinationsstelle verschickt Einladungen per E-Mail und veröffentlicht das Thema. "+vt,"info":["Thema wird auf Plattform veröffentlicht.","Koordinationsstelle verschickt Einladungen/E-Mails.","„Vergessene“ Bereiche können mit 2/3 ergänzt werden."],"agent_actions":actions,"vote":vote,"next_delay_ms":dur(210000)})
-    polit, experts = pick_members(sc, pool, reg)
-   explines = [f"{d}: " + ", ".join(f"{e.name.split('#')[0]} ({e.mbti})" for e in lst) for d, lst in experts.items()]
-    scenes.append({"phase":"P3","title":"Gremiumszusammensetzung","text":"Geladene Bereiche benennen ihre Vertreter. Interessenkonflikte werden offengelegt.","info":["Standard: max. zwei Vertreter pro Bereich.","Sonderfälle per 2/3-Mehrheit.","Interessenkonflikte werden offengelegt."],"agent_actions":["Zusammensetzung (max. 2/Bereich):"]+explines,"next_delay_ms":dur(210000)})
-    ev,ac,lg,im,co,va,summary = deliberate(experts)
-    expert_sample=[e for lst in experts.values() for e in lst]; random.shuffle(expert_sample); expert_sample=expert_sample[:8]
-    verbs=["präsentiert Evidenz.","verweist auf Wechselwirkungen.","beantwortet Rückfragen.","skizziert Datenlücken."]
-    acts=[f"{(e.disc or 'Fach')} {e.name.split('#')[0]} ({e.mbti}) "+random.choice(verbs) for e in expert_sample]
-    scenes.append({"phase":"P4","title":"Beratung – Evidenz & Wechselwirkungen","text":"Die Fachbereiche tragen Erkenntnisse zusammen. "+summary,"info":["Runde 1: Evidenz, Wechselwirkungen, Rückfragen.","Runde 2: Umsetzung, Hindernisse, Alternativen.","Minority-Report möglich; Politik moderiert."],"agent_actions":acts,"metrics":{"Evidenz":ev,"Akzeptanz":ac,"Recht":lg,"Umsetzung":im,"Kosten":co,"Wertefit":va},"next_delay_ms":dur(240000)})
-    verbs2=["entwirft Umsetzungsfahrplan.","identifiziert Hindernisse.","macht Alternativvorschlag.","schätzt Ressourcenbedarf."]
-    acts2=[f"{(e.disc or 'Fach')} {e.name.split('#')[0]} ({e.mbti}) "+random.choice(verbs2) for e in expert_sample[:5]]
-    scenes.append({"phase":"P4","title":"Beratung – Umsetzung & Alternativen","text":"In Runde 2 werden Umsetzung, Hindernisse & Alternativen erarbeitet.","info":["Praxis- & Implementierungsperspektive ist entscheidend.","Politik moderiert, hält Redeanteile gering."],"agent_actions":acts2,"next_delay_ms":dur(210000)})
-    decision, rationale, votes = decide(polit, (ev,ac,lg,im,co,va))
-    polsp = random.sample(polit, k=min(4,len(polit)))
-    polacts=[f"{p.role} {p.name.split('#')[0]} ({p.mbti}) fasst Ergebnisse zusammen und moderiert die Entscheidung." for p in polsp]
-    scenes.append({"phase":"P5","title":"Entscheidung & Veröffentlichung","text":f"Ergebnis: {decision} – {rationale}. Kurzfassung wird veröffentlicht.","info":["Politik fasst zusammen und entscheidet.","Abweichungen müssen begründet werden.","Verständliche Kurzfassung wird veröffentlicht."],"agent_actions":polacts,"vote":{"votes":votes,"decision":decision,"rationale":rationale},"next_delay_ms":dur(180000)})
-    scenes.append({"phase":"END","title":"Warum dieses Verfahren?","text":"Die wichtigsten Vorteile:","info":["Höhere Qualität durch Expertise","Hindernisse früh erkennen","Entlastung der Politik (Moderation)","Transparenz & Begründungspflicht","Flexibel statt Dauerbürokratie"],"agent_actions":[],"next_delay_ms":dur(90000)})
+
+def pick_members(scopes: List[str], pool: List[Agent], reg: Dict[str, List[Agent]]) -> Dict[str, List[Agent]]:
+    # wähle je Bereich max zwei Expert*innen
+    result: Dict[str, List[Agent]] = {}
+    for d in scopes:
+        lst = reg.get(d, [])
+        random.shuffle(lst)
+        result[d] = lst[:2]
+    return result
+
+# ---------- UI Hilfen ----------
+def qs(id_: str):
+    return document.getElementById(id_)
+
+def set_text(id_: str, txt: str):
+    qs(id_).textContent = txt
+
+def set_html(id_: str, html: str):
+    qs(id_).innerHTML = html
+
+def hide(id_: str):
+    qs(id_).style.display = "none"
+
+def show(id_: str, disp="block"):
+    qs(id_).style.display = disp
+
+def render_phasebar(phases: List[str], active_index: int):
+    el = qs("phasebar")
+    el.innerHTML = ""
+    for i, ph in enumerate(phases):
+        chip = document.createElement("div")
+        chip.classList.add("chip")
+        if i == active_index:
+            chip.classList.add("active")
+        chip.textContent = ph
+        el.appendChild(chip)
+
+def render_vote(yes: int, tot: int):
+    pct = 0 if tot == 0 else round(100*yes/tot)
+    qs("vote").innerHTML = f"<b>Abstimmung:</b> {yes}/{tot} Stimmen, {pct}% Zustimmung"
+    show("vote")
+
+def clear_vote():
+    hide("vote")
+    qs("vote").innerHTML = ""
+
+def metric(name: str, value: float):
+    # einfache Balkenanzeige 0..1
+    pct = max(0, min(100, int(value*100)))
+    wrap = document.createElement("div")
+    wrap.classList.add("barwrap")
+    bar = document.createElement("div")
+    bar.classList.add("bar")
+    bar.style.width = f"{pct}%"
+    bar.style.background = "linear-gradient(90deg,#3478f6,#42d392)"
+    lab = document.createElement("div"); lab.classList.add("lab"); lab.textContent = name
+    val = document.createElement("div"); val.classList.add("val"); val.textContent = f"{pct}%"
+    wrap.appendChild(bar); wrap.appendChild(lab); wrap.appendChild(val)
+    qs("metrics").appendChild(wrap)
+
+# ---------- Storyboard ----------
+Scene = Dict[str, object]
+
+def describe_experts(experts: Dict[str, List[Agent]]) -> List[str]:
+    lines: List[str] = []
+    for d, lst in experts.items():
+        names = ", ".join(f"{e.name.split('#')[0]} ({e.mbti})" for e in lst)
+        lines.append(f"{d}: {names}" if names else f"{d}: –")
+    return lines
+
+def deliberate(experts: Dict[str, List[Agent]]) -> Tuple[str, Dict[str, float]]:
+    # sehr vereinfachte "Bewertung" als Mittelwert: jede Disziplin gibt 0..1 Punkt
+    vals: Dict[str, float] = {}
+    for d, lst in experts.items():
+        x = 0.5 + 0.1*(len(lst)) + (random.random()-0.5)*0.2
+        vals[d] = max(0.0, min(1.0, x))
+    # Gesamtscore für Entscheidung:
+    score = sum(vals.values()) / max(1, len(vals))
+    rationale = f"Gesamtscore (Evidenz & Umsetzbarkeit): {round(score*100)}%."
+    return rationale, vals
+
+def decide(polit_core: List[Agent], score: float) -> Tuple[str, int, int]:
+    tot = len(polit_core)
+    bias = 0.1 * (1 if score >= 0.5 else -1)
+    yes = 0
+    for _ in range(tot):
+        base = score + bias + (random.random()-0.5)*0.2
+        if base >= 0.5: yes += 1
+    decision = "ADOPT" if yes >= math.ceil(2*tot/3) else ("PILOT" if yes >= math.ceil(tot/2) else "REJECT")
+    return decision, yes, tot
+
+def storyboard(topic: str, speed: float) -> List[Scene]:
+    pool = political_pool()
+    reg = expert_registry()
+    scopes = PROBLEMS.get(topic, [])[:]
+    polit_core = [a for a in pool if a.role in ("Regierung","Verwaltung")][:8]
+
+    scenes: List[Scene] = []
+    # P1 – Thema/Scopes
+    scenes.append({
+        "phase":"P1",
+        "title":"Thema & Fachbereiche festlegen",
+        "lines":[f"Thema: {topic}"] + PINFO["P1"] + ["Fachbereiche: " + ", ".join(scopes)],
+        "acts":[("Weiter", "next")],
+    })
+    # P2 – Ausschreibung
+    scenes.append({
+        "phase":"P2",
+        "title":"Ausschreibung & Bewerbungen",
+        "lines":PINFO["P2"],
+        "acts":[("Bewerbungen sichten", "next")],
+    })
+    # P3 – Auswahl
+    experts = pick_members(scopes, pool, reg)
+    scenes.append({
+        "phase":"P3",
+        "title":"Gremium zusammenstellen",
+        "lines":["Ausgewählte Expert:innen:"] + describe_experts(experts),
+        "acts":[("Gremium bestätigen", "next")],
+    })
+    # P4 – Beratung
+    rationale, vals = deliberate(experts)
+    scenes.append({
+        "phase":"P4",
+        "title":"Beratung & Evidenz",
+        "lines":[rationale, "Zwischenindikatoren werden aktualisiert."],
+        "metrics":vals,
+        "acts":[("Zur Abstimmung", "next")],
+    })
+    # P5 – Entscheidung
+    score = sum(vals.values())/max(1,len(vals))
+    decision, yes, tot = decide(polit_core, score)
+    vt = f"Abstimmung über Maßnahmenpaket ({topic})"
+    scenes.append({
+        "phase":"P5",
+        "title":"Politische Entscheidung",
+        "lines":[f"Ergebnis: {decision}.", f"{yes}/{tot} Stimmen zustimmend."],
+        "vote":(yes, tot),
+        "acts":[("Beenden", "end")],
+    })
     return scenes
 
-PHASES=["P1","P2","P3","P4","P5","END"]
-topic_sel=document.getElementById("topic")
-for t in PROBLEMS.keys():
-    o=document.createElement("option"); o.value=t; o.textContent=t; topic_sel.appendChild(o)
-phasebar=document.getElementById("phasebar")
-def render_phasebar(active):
-    phasebar.innerHTML=""
-    labels={"P1":"Phase 1","P2":"Phase 2","P3":"Phase 3","P4":"Phase 4","P5":"Phase 5","END":"Ende"}
-    for p in PHASES:
-        chip=document.createElement("div"); chip.className="chip"+(" active" if p==active else "")
-        chip.textContent=labels[p]; phasebar.appendChild(chip)
-sceneTitle=document.getElementById("sceneTitle"); sceneText=document.getElementById("sceneText")
-actions=document.getElementById("actions"); info=document.getElementById("info")
-metrics=document.getElementById("metrics"); voteBox=document.getElementById("vote"); timerEl=document.getElementById("timer")
-SCENES=[]; idx=-1; timer=None; remaining=0
-def fmt(ms): s=math.ceil(ms/1000); m=s//60; r=s%60; return f"{m}:{r:02d} min"
-def clear_metrics(): metrics.innerHTML=""
-def add_metric(name,val):
-    wrap=document.createElement("div"); wrap.className="barwrap"
-    bar=document.createElement("div"); bar.className="bar"
-    lab=document.createElement("div"); lab.className="lab"; lab.textContent=name
-    valel=document.createElement("div"); valel.className="val"; valel.textContent=str(int(val*100))+"%"
-    wrap.appendChild(bar); wrap.appendChild(lab); wrap.appendChild(valel); metrics.appendChild(wrap)
-    window.setTimeout(lambda: setattr(bar.style,"width",f"{int(val*100)}%"),0)
-def render_scene(i):
-    global remaining
-    s=SCENES[i]; render_phasebar(s["phase"])
-    sceneTitle.textContent=s["title"]; sceneText.textContent=s["text"]
-    actions.innerHTML=""
-    for line in s["agent_actions"]:
-        d=document.createElement("div"); d.className="act"; d.textContent="• "+line; actions.appendChild(d)
-    info.innerHTML=""
-    for tip in s["info"]:
-        li=document.createElement("li"); li.textContent=tip; info.appendChild(li)
-    voteBox.style.display="none"
-    if s.get("vote"):
-        voteBox.style.display="block"
-        voteBox.innerHTML="<div class='muted'>Abstimmung/Ergebnis:</div><pre style='white-space:pre-wrap'>"+json.dumps(s["vote"], ensure_ascii=False, indent=2)+"</pre>"
-    clear_metrics()
-    if s.get("metrics"):
-        for k,v in s["metrics"].items(): add_metric(k,v)
-    remaining=int(s.get("next_delay_ms",60000)); timerEl.textContent="Nächste Szene in "+fmt(remaining)
-def tick():
-    global remaining, timer, idx
-    remaining-=1000
-    if remaining<0: next_scene()
-    else:
-        timerEl.textContent="Nächste Szene in "+fmt(remaining)
-        timer=window.setTimeout(tick,1000)
+# ---------- Ablaufsteuerung ----------
+SCENES: List[Scene] = []
+idx = -1
+remaining = 0
+timer = None
+
+def set_info(lines: List[str]):
+    ul = qs("info"); ul.innerHTML = ""
+    for ln in lines:
+        li = document.createElement("li")
+        li.textContent = ln
+        ul.appendChild(li)
+
+def render_scene():
+    global SCENES, idx
+    scene = SCENES[idx]
+    phases = [s["phase"] for s in SCENES]
+    render_phasebar(phases, idx)
+
+    set_text("sceneTitle", scene["title"])
+    set_html("sceneText", "<br>".join(scene.get("lines", [])))
+
+    # metrics
+    qs("metrics").innerHTML = ""
+    for name, val in scene.get("metrics", {}).items():
+        metric(name, float(val))
+
+    # vote box
+    clear_vote()
+    if "vote" in scene:
+        y, t = scene["vote"]
+        render_vote(y, t)
+
+    # actions
+    acts_el = qs("actions"); acts_el.innerHTML = ""
+    for label, code in scene.get("acts", []):
+        btn = document.createElement("button")
+        btn.classList.add("act")
+        btn.textContent = label
+        def handler(ev, c=code):
+            if c == "next":
+                next_scene()
+            elif c == "end":
+                end_run()
+        btn.addEventListener("click", handler)
+        acts_el.appendChild(btn)
+
 def next_scene():
-    global idx, timer
-    if timer: window.clearTimeout(timer); timer=None
-    idx+=1
-    if idx>=len(SCENES): timerEl.textContent="Probedurchlauf beendet."; return
-    render_scene(idx); timer=window.setTimeout(tick,1000)
+    global idx
+    idx += 1
+    if idx >= len(SCENES):
+        end_run()
+        return
+    render_scene()
+
+def end_run():
+    set_text("sceneTitle", "Durchlauf beendet")
+    set_text("sceneText", "Du kannst ein neues Thema wählen und erneut starten.")
+    qs("actions").innerHTML = ""
+    clear_vote()
+    render_phasebar([], -1)
+
 def start_run(evt=None):
     global SCENES, idx, timer
-    if timer: window.clearTimeout(timer); timer=None
-    topic=document.getElementById("topic").value
-    speed=float(document.getElementById("speed").value)
-    SCENES=storyboard(topic, speed); idx=-1; next_scene()
-def skip_scene(evt=None):
-    global remaining; remaining=0
-def restart(evt=None):
-    global SCENES, idx
-    SCENES=[]; idx=-1; render_phasebar(None)
-    sceneTitle.textContent="Neuer Durchlauf"; sceneText.textContent="Wähle ein Thema und starte den Probedurchlauf."
-    actions.innerHTML=""; info.innerHTML=""; clear_metrics(); voteBox.style.display="none"; timerEl.textContent=""
-document.getElementById("start").addEventListener("click", start_run)
-document.getElementById("skip").addEventListener("click", skip_scene)
-document.getElementById("restart").addEventListener("click", restart)
-</script>
+    if timer: 
+        window.clearTimeout(timer)
+    topic = qs("topic").value
+    speed = float(qs("speed").value)
+    SCENES = storyboard(topic, speed)
+    idx = -1
+    set_info([f"Thema: {topic}", "Phasen: " + ", ".join(s['phase'] for s in SCENES)])
+    next_scene()
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', ()=>navigator.serviceWorker.register(
-    URL.createObjectURL(new Blob(
-      ["self.addEventListener('install',e=>e.waitUntil(caches.open('ps-v1').then(c=>c.addAll(['./']))));",
-       "self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));"],
-      {type:'text/javascript'}))));
-}
-</script>
-</body> 
+def skip_scene(evt=None):
+    next_scene()
+
+def restart(evt=None):
+    # wählt ein zufälliges Thema und setzt UI zurück
+    opts = list(PROBLEMS.keys())
+    qs("topic").value = random.choice(opts)
+    set_text("sceneTitle", "Neuer Durchlauf")
+    set_text("sceneText", "Thema gewählt. Klicke auf Start.")
+    qs("actions").innerHTML = ""
+    clear_vote()
+    qs("metrics").innerHTML = ""
+    render_phasebar([], -1)
+
+# ---------- Bootstrap ----------
+# Dropdown mit Themen füllen
+topic_sel = qs("topic"); topic_sel.innerHTML = ""
+for k in PROBLEMS.keys():
+    opt = document.createElement("option")
+    opt.value = k; opt.textContent = k
+    topic_sel.appendChild(opt)
+# Default erstes Thema
+if topic_sel.options.length > 0:
+    topic_sel.value = topic_sel.options.item(0).value
+
+# Buttons verbinden
+qs("start").addEventListener("click", start_run)
+qs("skip").addEventListener("click", skip_scene)
+qs("restart").addEventListener("click", restart)
+  </script>
+</body>
 </html>
