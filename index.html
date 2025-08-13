@@ -8,9 +8,9 @@
 <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Policy-Sim&quot;,&quot;short_name&quot;:&quot;PolicySim&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230b0d12&quot;,&quot;theme_color&quot;:&quot;%230b0d12&quot;}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-<script defer src="https://pyscript.net/latest/pyscript.js"></script>
+  
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css">
+<script defer src="https://pyscript.net/releases/2024.5.1/core.js"></script>
 
 <style>
 :root{color-scheme:dark;--bg:#0b0d12;--panel:#121521;--muted:#9aa4b2;--accent:#5b8cff;--ok:#21d07a;--warn:#ffb020;--bad:#ff5c5c}
@@ -73,8 +73,10 @@ main{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;padding:18px}
   </aside>
 </main>
 
-<py-config>packages = []</py-config>
-<py-script>
+<script type="py-config">
+  packages = []
+</script>
+<script type="py">
 import math, random, json
 from dataclasses import dataclass, field
 from typing import Dict
@@ -287,7 +289,7 @@ def restart(evt=None):
 document.getElementById("start").addEventListener("click", start_run)
 document.getElementById("skip").addEventListener("click", skip_scene)
 document.getElementById("restart").addEventListener("click", restart)
-</py-script>
+</script>
 
 <script>
 if ('serviceWorker' in navigator) {
