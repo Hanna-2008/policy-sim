@@ -335,11 +335,12 @@ def start_run(evt=None):
     next_scene()
 
 # ---------- Bootstrap ----------
-# Dropdown "topic" befüllen (WICHTIG: exakt EIN #topic im DOM)
+# Dropdown "topic" befüllen
 topic_sel = qs("#topic")
 topic_sel.innerHTML = "".join(
     f'<option value="{k}">{k}</option>' for k in PROBLEMS.keys()
 )
+# Default: erstes Thema wählen
 if topic_sel.options.length > 0:
     topic_sel.value = topic_sel.options.item(0).value
 
