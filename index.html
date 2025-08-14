@@ -351,15 +351,27 @@ def restart(evt=None):
     render_phasebar()
 
 def start_run(evt=None):
+    # DEBUG-Version: zeigt in der Infobox, ob der Klick ankommt
+    from js import document, window
     global SCENES, idx, timer
-    if timer:
-        window.clearTimeout(timer)
-    topic = qs("#topic").value
-    speed = float(qs("#speed").value)
-    SCENES = storyboard(topic, speed)
-    idx = -1
-    set_info([f"Thema: {topic}", f"Phasen: {len(SCENES)}"])
-    next_scene()
+    try:
+        if timer:
+            window.clearTimeout(timer)
+
+        topic_el = document.getElementById("topic")
+        speed_el = document.getElementById("speed")
+        topic = topic_el.value if topic_el else "(kein topic)"
+        speed = float(speed_el.value) if speed_el else 1.0
+
+        SCENES = storyboard(topic, speed)
+idx = -1
+set_info([
+    f"Start geklickt · Thema: {topic}",
+    f"Szenen erzeugt: {len(SCENES)}"
+])
+next_scene()
+    except Exception as e:
+        set_info([f"START-FEHLER: {e!r}"])
 
 
 # Buttons verbinden
