@@ -86,6 +86,27 @@
     </aside>
   </main>
 
+
+<!-- Fallback: Dropdown-Themen per JavaScript -->
+<script>
+  const PROBLEM_KEYS = [
+    "KI-Regulierung in Behörden",
+    "Energiewende & Netzausbau",
+    "Wohnungsbau & Mieten",
+    "Gesundheitsreform",
+    "Cybersicherheit Staat",
+    "Schule & Digitalisierung"
+  ];
+
+  const sel = document.getElementById("topic");
+  if (sel) {
+    sel.innerHTML = PROBLEM_KEYS.map(k => `<option value="${k}">${k}</option>`).join("");
+if (sel.options.length) sel.value = sel.options.item(0).value;
+    const info = document.getElementById("info");
+if (info) info.innerHTML = `<li>Dropdown gefüllt ✅: ${sel.options.length} Themen</li>`;
+  }
+</script>
+
   <!-- PyScript-Konfiguration (keine extra Packages nötig) -->
   <script type="py-config">
 packages = []
