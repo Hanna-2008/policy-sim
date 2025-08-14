@@ -5,30 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Policy-Sim (Normalbetrieb)</title>
 
-  <!-- PyScript 2024.x: richtige Tags -->
-  <link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css">
-  <script defer src="https://pyscript.net/releases/2024.5.1/core.js"></script>
+  <!-- PyScript 2024.x -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.6.1/core.css">
+  <script defer src="https://pyscript.net/releases/2024.6.1/core.js"></script>
 
   <style>
-    :root { color-scheme: dark; --bg:#0b0d12; --panel:#121521; --muted:#9aa4b2; --accent:#3da1ff; }
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#0f1320; --accent:#2563eb }
     *{ box-sizing:border-box }
-    body{ margin:0; background:var(--bg); color:#e6e9ef; font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji }
-    header{ padding:14px 18px; border-bottom:1px solid #1b2030; display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center }
+    body{ margin:0; background:var(--bg); color:#e6ecff; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif }
+    header{ padding:16px 18px; border-bottom:1px solid #1c2030; display:grid; gap:10px;
+            grid-template-columns: 1fr auto auto auto }
     header h1{ font-size:18px; margin:0 8px 0 0 }
-    select,button,input{ background:#0f1320; color:#e6e9ef; border:1px solid #1f2638; padding:8px 10px; border-radius:8px }
-    button.primary{ background:var(--accent); color:#000; border:0; font-weight:700 }
-    main{ display:grid; grid-template-columns:1.25fr .75fr; gap:18px; padding:18px }
-    .panel{ background:var(--panel); border:1px solid #1b2030; border-radius:12px; padding:16px }
+    select,button{ background:#0f1320; color:#e6ecff; border:1px solid #30364d; border-radius:8px; padding:8px 10px }
+    button.primary{ background:var(--accent); border-color:var(--accent); color:white }
+    main{ display:grid; grid-template-columns:1fr 360px; gap:14px; padding:14px; align-items:start }
+    .panel{ background:var(--panel); border:1px solid #1b2030; border-radius:10px; padding:14px }
+    .scene-title{ margin:0 0 6px 0 }
+    .scene-text{ margin:0 0 10px 0; color:#cfd7ff }
+    .actions{ margin-top:10px }
     .phasebar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px }
-    .chip{ padding:6px 10px; border-radius:999px; border:1px solid #1b2030; font-size:12px; color:#9aa4b2 }
-    .chip.active{ background:#1a2140; color:#fff; border-color:#28325a }
-    .scene-title{ font-weight:700; margin:0 0 8px }
-    .scene-text{ color:#d9dde6; margin:0 0 8px }
-    .actions{ margin-top:10px; display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) }
-    .act{ padding:10px; background:#121829; border:1px solid #26304d; border-radius:8px; cursor:pointer }
-    .infobox h4{ margin:0 0 8px 0; font-size:14px; color:#bac2cf }
-    .infobox ul{ margin:0; padding-left:16px }
-    .metrics{ display:grid; gap:8px; margin-top:12px }
+    .chip{ padding:6px 10px; border-radius:999px; background:#11182a; color:#b9c4ff; border:1px solid #26304a }
+    .chip.active{ background:#1a2140; color:#fff; border-color:#3a4a7a }
+    .infobox h4{ margin:0 0 8px 0; font-size:13px; color:#b7c0ff }
+    .infobox ul{ margin:0; padding-left:18px; font-size:13px; color:#b7c0ff }
+    .metrics{ display:grid; gap:8px; margin-top:10px }
+    @media (max-width:860px){ main{ grid-template-columns:1fr } }
   </style>
 </head>
 <body>
@@ -36,7 +37,7 @@
     <h1>Policy-Sim (Normalbetrieb)</h1>
 
     <div>
-      <label for="speed" style="display:block;font-size:12px;color:var(--muted)">Tempo</label>
+      <label for="speed" style="display:block;font-size:12px;color:#9fb0ff">Tempo</label>
       <select id="speed">
         <option value="0.5">Cinematic (~4 min/Phase)</option>
         <option value="1.0" selected>Normal (~2 min/Phase)</option>
@@ -44,10 +45,10 @@
       </select>
     </div>
 
-    <div style="display:flex; gap:8px; align-items:end">
-      <button id="start" class="primary">Start</button>
-      <button id="skip">Szene überspringen</button>
-      <button id="restart">Neues Thema</button>
+    <div style="display:flex; gap:8px; align-items:center">
+      <button id="start" class="primary" py-click="start_run()">Start</button>
+      <button id="skip" py-click="skip_scene()">Szene überspringen</button>
+      <button id="restart" py-click="restart()">Neues Thema</button>
     </div>
   </header>
 
@@ -70,260 +71,159 @@
       <div class="metrics" id="metrics"></div>
 
       <div style="margin-top:10px">
-        <label style="display:block;font-size:12px;color:var(--muted)">Thema</label>
-        <!-- WICHTIG: Es gibt GENAU EIN select mit id="topic" -->
+        <label for="topic" style="display:block;font-size:12px;color:#9fb0ff">Thema</label>
+        <!-- WICHTIG: Es gibt GENAU EIN select#topic -->
         <select id="topic" style="width:100%"></select>
       </div>
     </aside>
   </main>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Beispiel-Themen – Hauptsache: Dropdown füllt sich
-  const PROBLEMS = {
-    "KI-Regulierung in Behörden": [],
-    "Energiewende & Netzausbau": [],
-    "Wohnungsbau & Mieten": [],
-    "Gesundheitsreform": [],
-    "Cybersicherheit Staat": [],
-    "Schule & Digitalisierung": []
-  };
-
-  const sel  = document.getElementById('topic');
-  const info = document.getElementById('info');
-
-  if (!sel) {
-    if (info) info.innerHTML = '<li>FEHLER: #topic nicht gefunden</li>';
-    return;
-  }
-
-  const keys = Object.keys(PROBLEMS);
-  sel.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
-  if (keys.length) sel.value = keys[0];
-
-  if (info) info.innerHTML = `<li>Dropdown gefüllt: ${keys.length} Themen</li>`;
-});
-</script>
-  <!-- PyScript-Konfiguration: 2024.x -->
-  <script type="py-config">
-packages = []
-  </script>
 
   <!-- App-Logik (Python) -->
   <script type="py">
-from typing import Dict, List, Tuple
 from js import document, window
- from pyodide.ffi import create_proxy    
-   document.title = "Policy-Sim ✅" 
-import random, math
+import random
 
-# ---------- kleine DOM-Hilfen ----------
-def qs(id_or_selector: str):
-    """Wenn '#…' übergeben wird, nutze querySelector; sonst getElementById."""
-    if id_or_selector.startswith("#"):
-        return document.querySelector(id_or_selector)
-    return document.getElementById(id_or_selector)
+document.title = "Policy-Sim ✅"
+
+# ---------- DOM-Helfer ----------
+def qs(sel: str):
+    if sel.startswith("#"):
+        return document.getElementById(sel[1:])
+    return document.querySelector(sel)
 
 def set_text(id_: str, txt: str):
-    el = qs(id_)
+    el = qs("#"+id_) if not id_.startswith("#") else qs(id_)
     if el is not None:
         el.textContent = txt
 
 def set_html(id_: str, html: str):
-    el = qs(id_)
+    el = qs("#"+id_) if not id_.startswith("#") else qs(id_)
     if el is not None:
         el.innerHTML = html
 
-# ---------- Daten ----------
-MBTI = ["ENTJ","INTJ","ENTP","INTP","ENFJ","INFJ","ENFP","INFP","ESTJ","ISTJ","ESFJ","ISFJ","ESTP","ISTP","ESFP","ISFP"]
+def set_info(lines):
+    ul = qs("#info")
+    ul.innerHTML = "" if not lines else "".join(f"<li>{line}</li>" for line in lines)
 
-DISC = [
-    "Volkswirtschaft","Public Health","Energiesysteme","Recht",
-    "Ethik/Grundrechte","Daten-/IT-Sicherheit","Implementation/Verwaltung",
-    "Statistik/Methoden","Verkehr/Infrastruktur","Kommunikation"
-]
-
-# Themen: Schlüssel erscheinen im Dropdown
-PROBLEMS: Dict[str, List[str]] = {
-    "KI-Regulierung in Behörden": ["Daten-/IT-Sicherheit","Recht","Ethik/Grundrechte","Implementation/Verwaltung"],
-    "Energiewende & Netzausbau": ["Energiesysteme","Volkswirtschaft","Verkehr/Infrastruktur","Statistik/Methoden"],
-    "Wohnungsbau & Mieten": ["Volkswirtschaft","Recht","Kommunikation","Implementation/Verwaltung"],
-    "Gesundheitsreform": ["Public Health","Volkswirtschaft","Statistik/Methoden","Ethik/Grundrechte"],
-    "Cybersicherheit Staat": ["Daten-/IT-Sicherheit","Recht","Implementation/Verwaltung","Kommunikation"],
-    "Schule & Digitalisierung": ["Implementation/Verwaltung","Daten-/IT-Sicherheit","Kommunikation","Statistik/Methoden"]
-}
-
-# Phaseninfo (für die Info-Box)
-PINFO: Dict[str, List[str]] = {
-    "P1": ["Nur FachBEREICHE werden zuerst festgelegt.","Gremienaufbau, keine Inhalte."],
-    "P2": ["Thema wird auf Plattform veröffentlicht.","Beteiligte melden sich an."],
-    "P3": ["Standard: max. zwei Vertreter pro Bereich.","Diversität sichern."],
-    "P4": ["Runde 1: Evidenz, Wechselwirkungen, Nebenfolgen.","Runde 2: Maßnahmenbündel."],
-    "P5": ["Politische Abwägung und Entscheidung."]
-}
-
-# ---------- Modelle (minimal gehalten) ----------
-class Agent:
-    def __init__(self, name: str, role: str, disc: str, mbti: str):
-        self.name = name
-        self.role = role
-        self.disc = disc
-        self.mbti = mbti
-
-def political_pool() -> List[Agent]:
-    people = []
-    roles = ["Regierung","Opposition","Verwaltung","Wissenschaft"]
-    # Konstruiere ein kleines, aber gemischtes Gremium
-    for i in range(16):
-        people.append(Agent(
-            name=f"Person {i+1}",
-            role=random.choice(roles),
-            disc=random.choice(DISC),
-            mbti=random.choice(MBTI),
-        ))
-    return people
-
-def pick_members(sector_keys: List[str], pool: List[Agent], per_sector: int = 2) -> Dict[str, List[Agent]]:
-    """Wählt je Sektor Vertreter aus dem Pool."""
-    out: Dict[str, List[Agent]] = {}
-    for d in sector_keys:
-        cand = [p for p in pool if p.disc == d]
-        if len(cand) < per_sector:
-            # auffüllen aus Rest
-            rest = [p for p in pool if p.disc != d]
-            cand = cand + random.sample(rest, k=max(0, per_sector - len(cand)))
-        out[d] = random.sample(cand, k=min(per_sector, len(cand)))
-    return out
-
-# ---------- Storyboard (Szene-Generator) ----------
-def decide(core: Dict[str, List[Agent]]) -> Tuple[str, int, int]:
-    """Spielerische Abstimmung: zufälliger Score -> 'ADOPT' oder 'REJECT'."""
-    yes = random.randint(8, 14)
-    tot = 20
-    decision = "ADOPT" if yes >= 12 else "REJECT"
-    return decision, yes, tot
-
-def storyboard(topic: str, speed: float):
-    pool = political_pool()
-    sectors = PROBLEMS.get(topic, [])
-    experts = pick_members(sectors, pool, per_sector=2)
-
-    # Kleine Beschreibungen je Phase
-    scenes = []
-
-    # P1 – Thema & Bereiche
-    lines = [
-        f"Gewähltes Thema: {topic}",
-        "Fachbereiche werden festgelegt:",
-        ", ".join(sectors) if sectors else "(keine Sektoren definiert)"
-    ]
-    scenes.append({
-        "phase":"P1",
-        "title":"Thema & Bereiche",
-        "lines":lines,
-        "acts":[("Gremium aufbauen","next")]
-    })
-
-    # P2 – Gremium bestätigen (zeige ausgewählte Expert:innen)
-    explines = [
-        f"{d}: " + ", ".join(f"{e.name} ({e.mbti})" for e in lst)
-        for d, lst in experts.items()
-    ]
-    scenes.append({
-        "phase":"P2",
-        "title":"Gremium bestätigen",
-        "lines":["Ausgewählte Expert:innen:"] + explines,
-        "acts":[("Weiter","next")]
-    })
-
-    # P3 – Beratungsvorbereitung
-    scenes.append({
-        "phase":"P3",
-        "title":"Evidenz zusammentragen",
-        "lines":[
-            "Runde 1: Problembeschreibung, Nebenwirkungen, Wechselwirkungen.",
-            "Runde 2: Maßnahmenbündel entwerfen."
-        ],
-        "acts":[("Zur Beratung","next")]
-    })
-
-    # P4 – Beratung (Pseudo-Metriken)
-    vals = { "Evidenz": random.uniform(0.4, 0.9), "Akzeptanz": random.uniform(0.3, 0.8) }
-    scenes.append({
-        "phase":"P4",
-        "title":"Beratung & Evidenz",
-        "lines":[
-            "Evidenz wird präsentiert und diskutiert.",
-            "Metriken werden laufend aktualisiert."
-        ],
-        "metrics": vals,
-        "acts":[("Zur Abstimmung","next")]
-    })
-
-    # P5 – Entscheidung
-    decision, yes, tot = decide(experts)
-    scenes.append({
-        "phase":"P5",
-        "title":"Politische Entscheidung",
-        "lines":[f"Ergebnis: {decision}. Stimmen: {yes}/{tot}"],
-        "vote": (yes, tot),
-        "acts":[("Beenden","end")]
-    })
-
-    return scenes
-
-# ---------- Rendering ----------
-SCENES: List[dict] = []
-idx = -1
-timer = None
+def set_metrics(vals):
+    box = qs("#metrics")
+    if not vals:
+        box.innerHTML = ""
+        return
+    rows = [f"<div><b>{k}:</b> {v}</div>" for k, v in vals.items()]
+    box.innerHTML = "".join(rows)
 
 def render_phasebar():
     chips = []
     for i, s in enumerate(SCENES):
         cls = "chip active" if i == idx else "chip"
-        chips.append(f'<span class="{cls}">{s["phase"]}</span>')
+        chips.append(f'<span class="{cls}">{s.get("phase","P?")}</span>')
     set_html("phasebar", "".join(chips))
 
-def set_info(lines: List[str]):
-    set_html("info", "".join(f"<li>{l}</li>" for l in lines))
+# ---------- Themen ----------
+PROBLEMS = {
+    "KI-Regulierung in Behörden": ["Daten/IT-Sicherheit","Ethik/Grundrechte","Recht"],
+    "Energiewende & Netzausbau": ["Energiesysteme","Volkswirtschaft","Kommunikation"],
+    "Wohnungsbau & Mieten":     ["Volkswirtschaft","Recht","Umwelt"],
+    "Gesundheitsreform":        ["Public Health","Finanzen","Versorgung"],
+    "Cybersicherheit Staat":    ["Daten/IT-Sicherheit","Recht","Organisation"],
+    "Schule & Digitalisierung": ["Implementierung/Verwaltung","Lehrpläne","Finanzen"]
+}
 
-def set_metrics(vals: Dict[str, float] | None):
-    if not vals:
-        set_html("metrics","")
-        return
-    rows = []
-    for k,v in vals.items():
-        rows.append(f'<div>{k}: {round(v*100):d}%</div>')
-    set_html("metrics","".join(rows))
+# kurze Phaseninfo (rechts sichtbar)
+PINFO = {
+    "P1": ["Nur FachBEREICHE werden zuerst festgelegt."],
+    "P2": ["Thema wird auf Plattform veröffentlicht. Gremium bestätigen."],
+    "P3": ["Evidenz zusammentragen (2 Runden)."],
+    "P4": ["Beratung & Evidenz – Pseudo-Metriken zeigen Fortschritt."],
+    "P5": ["Politische Abwägung und Entscheidung."]
+}
+
+# ---------- Story-Generator ----------
+def political_pool():
+    roles = ["Regierung","Opposition","Verbände","Wissenschaft","Zivilgesellschaft"]
+    disc  = ["Volkswirtschaft","Public Health","Energiesysteme","Recht",
+             "Ethik/Grundrechte","Daten/IT-Sicherheit","Implementierung/Verwaltung"]
+    people = []
+    for i in range(16):
+        people.append({
+            "name": f"Person {i+1}",
+            "role": random.choice(roles),
+            "disc": random.choice(disc),
+        })
+    return people
+
+def pick_members(sectors, pool, per_sector=3):
+    out = {}
+    for d in sectors:
+        cand = [p for p in pool if p["disc"] == d]
+        rest = [p for p in pool if p["disc"] != d]
+        if len(cand) < per_sector:
+            cand = cand + random.sample(rest, per_sector-len(cand))
+        out[d] = random.sample(cand, k=per_sector)
+    return out
+
+def decide(experts):
+    # simple Spiel-Abstimmung
+    yes = random.randint(8, 14); tot = 20
+    return ("ADOPT" if yes >= 12 else "REJECT"), yes, tot
+
+def storyboard(topic: str, speed: float):
+    pool = political_pool()
+    sectors = PROBLEMS.get(topic, [])
+    experts = pick_members(sectors, pool)
+
+    scenes = []
+
+    # P1
+    lines = [f"Gewähltes Thema: {topic}",
+             "Fachbereiche werden festgelegt:",
+             ", ".join(sectors) if sectors else "—"]
+    scenes.append({ "phase":"P1", "title":"Thema & Bereiche", "lines":lines })
+
+    # P2
+    explines = [f"{d}: " + ", ".join(f"{e['name']} ({e['role']})" for e in lst)
+                for d,lst in experts.items()]
+    scenes.append({ "phase":"P2", "title":"Gremium bestätigen",
+                    "lines":["Ausgewählte Expert:innen:"] + explines })
+
+    # P3
+    scenes.append({ "phase":"P3", "title":"Evidenz zusammentragen",
+                    "lines":["Runde 1: Problembeschreibung","Runde 2: Maßnahmenbündel entw." ]})
+
+    # P4
+    vals = { "Evidenz": round(random.uniform(0.4, 0.9), 2),
+             "Plausibilität": round(random.uniform(0.4, 0.9), 2),
+             "Kosten/Nutzen": round(random.uniform(0.4, 0.9), 2) }
+    scenes.append({ "phase":"P4", "title":"Beratung & Evidenz",
+                    "lines":["Evidenz wird präsentiert und diskutiert.",
+                             "Metriken werden laufend aktualisiert."],
+                    "metrics": vals })
+
+    # P5
+    decision, yes, tot = decide(experts)
+    scenes.append({ "phase":"P5", "title":"Politische Entscheidung",
+                    "lines":[f"Ergebnis: {decision}. Stimmen: {yes}/{tot}"] })
+
+    return scenes
+
+# ---------- Rendering / Steuerung ----------
+SCENES = []
+idx = -1  # aktuelle Szene
 
 def render_scene():
     s = SCENES[idx]
     set_text("sceneTitle", s.get("title",""))
-    set_text("sceneText",  " ".join(s.get("lines",[])))
+    set_text("sceneText",  " · ".join(s.get("lines",[])))
     set_metrics(s.get("metrics"))
-
-    # Buttons
-    acts = s.get("acts",[])
-    html = "".join(f'<button class="act" data-key="{key}">{label}</button>' for (label,key) in acts)
-    set_html("actions", html)
-
-    # Klicks binden
-    for btn in document.querySelectorAll("#actions .act"):
-        def _handler(evt, key=btn.getAttribute("data-key")):
-            if key == "next":
-                next_scene()
-            elif key == "end":
-                finish()
-        btn.addEventListener("click", _handler)
-
-    # Info-Leiste zum Phase Code
+    # Infoleiste mit Phasenhinweis
     info = PINFO.get(s.get("phase",""), [])
     if info:
         set_info(info)
-
     render_phasebar()
 
 def next_scene(evt=None):
-    global idx, timer
+    global idx
     idx += 1
     if idx >= len(SCENES):
         finish()
@@ -334,63 +234,46 @@ def skip_scene(evt=None):
     next_scene()
 
 def finish():
-    set_text("sceneTitle","Ende")
-    set_text("sceneText","Danke – Durchlauf beendet.")
+    set_text("sceneTitle", "Ende")
+    set_text("sceneText",  "Danke – Durchlauf beendet.")
     set_html("actions","")
     set_metrics(None)
     render_phasebar()
 
 def restart(evt=None):
-    """Zufälliges Thema übernehmen und UI zurücksetzen."""
-    opts = list(PROBLEMS.keys())
-    if opts:
-        qs("#topic").value = random.choice(opts)
-    set_text("sceneTitle","Neuer Durchlauf")
-    set_text("sceneText","Thema gewählt, starte erneut oder passe Einstellungen an.")
-    set_html("actions","")
-    set_metrics(None)
-    render_phasebar()
+    # Zufälliges Thema in Dropdown setzen, UI zurücksetzen
+    keys = list(PROBLEMS.keys())
+    if keys:
+        qs("#topic").value = random.choice(keys)
+        set_text("sceneTitle","Neuer Durchlauf")
+        set_text("sceneText","Thema gewählt, starte neu …")
+        set_html("actions","")
+        set_metrics(None)
+        render_phasebar()
 
 def start_run(evt=None):
-    # DEBUG-Version: zeigt in der Infobox, ob der Klick ankommt
-    from js import document, window
-    global SCENES, idx, timer
-    try:
-        if timer:
-            window.clearTimeout(timer)
+    # Sichtbarer Start-Check
+    set_info(["start_run aufgerufen ✅"])
+    global SCENES, idx
+    topic = qs("#topic").value
+    speed = float(qs("#speed").value)
+    SCENES = storyboard(topic, speed)
+    idx = -1
+    set_info([f"Start geklickt · Thema: {topic}",
+              f"Szenen erzeugt: {len(SCENES)}"])
+    next_scene()
 
-        topic_el = document.getElementById("topic")
-        speed_el = document.getElementById("speed")
-        topic = topic_el.value if topic_el else "(kein topic)"
-        speed = float(speed_el.value) if speed_el else 1.0
+# ---------- Bootstrap (Dropdown füllen) ----------
+def _bootstrap():
+    sel = qs("#topic")
+    keys = list(PROBLEMS.keys())
+    sel.innerHTML = "".join(f'<option value="{k}">{k}</option>' for k in keys)
+    if keys:
+        sel.value = keys[0]
+    # Sichtbarer Check rechts:
+    set_info([f"Dropdown geladen: {len(keys)} Themen"])
 
-        SCENES = storyboard(topic, speed)
-idx = -1
-set_info([
-    f"Start geklickt · Thema: {topic}",
-    f"Szenen erzeugt: {len(SCENES)}"
-])
-next_scene()
-    except Exception as e:
-        set_info([f"START-FEHLER: {e!r}"])
-
-
-# Buttons verbinden (mit Proxy; Referenzen am window halten)
-from pyodide.ffi import create_proxy  # falls oben schon vorhanden: doppelt ist ok
-
-try:
-    window._start_proxy   = create_proxy(start_run)
-    window._skip_proxy    = create_proxy(skip_scene)
-    window._restart_proxy = create_proxy(restart)
-
-    qs("#start").addEventListener("click",   window._start_proxy)
-    qs("#skip").addEventListener("click",    window._skip_proxy)
-    qs("#restart").addEventListener("click", window._restart_proxy)
-
-    # Sichtbarer Check in der Info-Box:
-    set_info(["Init OK: Buttons verbunden ✅"])
-except Exception as e:
-    set_info([f"INIT-FEHLER: {e!r}"])
+_bootstrap()
   </script>
 </body>
 </html>
