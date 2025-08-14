@@ -375,17 +375,22 @@ next_scene()
         set_info([f"START-FEHLER: {e!r}"])
 
 
-# Buttons verbinden
-    # Buttons verbinden (Proxys am window-Objekt festhalten)
-from pyodide.ffi import create_proxy  # sicherheitshalber nochmal
+# Buttons verbinden (mit Proxy; Referenzen am window halten)
+from pyodide.ffi import create_proxy  # falls oben schon vorhanden: doppelt ist ok
 
-window._start_proxy   = create_proxy(start_run)
-window._skip_proxy    = create_proxy(skip_scene)
-window._restart_proxy = create_proxy(restart)
+try:
+    window._start_proxy   = create_proxy(start_run)
+    window._skip_proxy    = create_proxy(skip_scene)
+    window._restart_proxy = create_proxy(restart)
 
-qs("#start").addEventListener("click",   window._start_proxy)
-qs("#skip").addEventListener("click",    window._skip_proxy)
-qs("#restart").addEventListener("click", window._restart_proxy)
+    qs("#start").addEventListener("click",   window._start_proxy)
+    qs("#skip").addEventListener("click",    window._skip_proxy)
+    qs("#restart").addEventListener("click", window._restart_proxy)
+
+    # Sichtbarer Check in der Info-Box:
+    set_info(["Init OK: Buttons verbunden ✅"])
+except Exception as e:
+    set_info([f"INIT-FEHLER: {e!r}"])
   </script>
 </body>
 </html>
