@@ -112,6 +112,7 @@ packages = []
   <script type="py">
 from typing import Dict, List, Tuple
 from js import document, window
+ from pyodide.ffi import create_proxy    
    document.title = "Policy-Sim ✅" 
 import random, math
 
@@ -375,9 +376,13 @@ next_scene()
 
 
 # Buttons verbinden
-qs("#start").addEventListener("click", start_run)
-qs("#skip").addEventListener("click", skip_scene)
-qs("#restart").addEventListener("click", restart)
+_start_proxy   = create_proxy(start_run)
+_skip_proxy    = create_proxy(skip_scene)
+_restart_proxy = create_proxy(restart)
+
+qs("#start").addEventListener("click", _start_proxy)
+qs("#skip").addEventListener("click", _skip_proxy)
+qs("#restart").addEventListener("click", _restart_proxy)
   </script>
 </body>
 </html>
