@@ -119,6 +119,7 @@ packages = []
   <script type="py">
 from typing import Dict, List, Tuple
 from js import document, window
+    from pyodide.ffi import create_proxy
 import random, math
 def by_id(id_: str):
     return document.getElementById(id_)
@@ -381,6 +382,27 @@ def start_run(evt=None):
         next_scene()
     except Exception as e:
         set_info([f"START-FEHLER: {e!r}"])
+    def bind_buttons():
+    """Verbindet Start/Skip/Restart robust mit Python-Funktionen (via Proxy)."""
+    try:
+        # Proxys erstellen
+        _start_proxy   = create_proxy(start_run)
+        _skip_proxy    = create_proxy(skip_scene)
+        _restart_proxy = create_proxy(restart)
+
+        # Auf window halten, damit sie nicht vom GC eingesammelt werden
+        window._start_proxy   = _start_proxy
+        window._skip_proxy    = _skip_proxy
+        window._restart_proxy = _restart_proxy
+
+        # Event-Listener setzen
+        by_id("start").addEventListener("click",   _start_proxy)
+        by_id("skip").addEventListener("click",    _skip_proxy)
+        by_id("restart").addEventListener("click", _restart_proxy)
+
+        set_info(["Init OK: Buttons verbunden ✅"])
+    except Exception as e:
+        set_info([f"INIT-FEHLER: {e!r}"])
 # ---------- Bootstrap ----------
 def populate_topics():
     """Befüllt den Select #topic immer zuverlässig."""
@@ -392,6 +414,7 @@ def populate_topics():
 
 # Seite initialisieren
 populate_topics()
+   bind_buttons() 
 set_info(["Dropdown geladen · Themen verfügbar: " + str(len(PROBLEMS))])
 document.title = "Policy-Sim ✅"
   </script>
