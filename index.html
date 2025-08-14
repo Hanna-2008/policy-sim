@@ -2,384 +2,344 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Policy-Sim (Normalbetrieb)</title>
 
-  <!-- PyScript 2024.x (richtige Tags) -->
-  <link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css" />
+  <!-- PyScript 2024.x: richtige Tags -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.5.1/core.css">
   <script defer src="https://pyscript.net/releases/2024.5.1/core.js"></script>
 
   <style>
-    :root { color-scheme: dark; --bg:#0b0d12; --panel:#121521; --muted:#9aa4b2; --accent:#3478f6; }
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#121521; --muted:#9aa4b2; --accent:#3da1ff; }
     *{ box-sizing:border-box }
-    body{ margin:0; background:var(--bg); color:#e6e9ef; font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial }
-    header{ padding:14px 18px; border-bottom:1px solid #1b2030; display:flex; flex-wrap:wrap; gap:10px; align-items:center }
+    body{ margin:0; background:var(--bg); color:#e6e9ef; font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji }
+    header{ padding:14px 18px; border-bottom:1px solid #1b2030; display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center }
     header h1{ font-size:18px; margin:0 8px 0 0 }
     select,button,input{ background:#0f1320; color:#e6e9ef; border:1px solid #1f2638; padding:8px 10px; border-radius:8px }
-    button.primary{ background:var(--accent); border:0; color:#fff; font-weight:700 }
-    main{ display:grid; grid-template-columns:1.25fr .75fr; gap:18px; padding:18px; }
-    .panel{ background:var(--panel); border:1px solid #1b2030; border-radius:12px; padding:14px }
-    .phasebar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
-    .chip{ padding:6px 10px; border-radius:999px; border:1px solid #1b2030; background:#121829; color:#b8c2d3; font-size:12px }
-    .chip.active{ background:#1a2140; color:#fff }
-    .scene-title{ font-weight:700; margin:0 0 8px 0 }
-    .scene-text{ color:#d9dde6; margin:0 0 8px 0 }
-    .actions{ margin-top:10px; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px }
-    .act{ padding:10px; background:#121829; border:1px solid #1b2030; border-radius:10px; cursor:pointer; text-align:center }
-    .infobox h4{ margin:0 0 8px 0; font-size:14px }
-    .infobox ul{ margin:0; padding-left:16px; color:#b8c2d3 }
-    .metrics{ display:grid; gap:8px; margin-top:8px }
-    .barwrap{ background:#0f1320; border:1px solid #1b2030; border-radius:10px; position:relative; height:16px }
-    .bar{ position:absolute; left:0; top:0; bottom:0 }
-    .lab{ position:absolute; left:10px; top:2px; font-size:12px; color:#9aa4b2 }
-    .val{ position:absolute; right:10px; top:2px; font-size:12px; color:#9aa4b2 }
-    .vote{ margin-top:12px; padding:10px; border:1px dashed #2a3450; border-radius:10px }
-    @media (max-width:860px){ main{ grid-template-columns:1fr } }
+    button.primary{ background:var(--accent); color:#000; border:0; font-weight:700 }
+    main{ display:grid; grid-template-columns:1.25fr .75fr; gap:18px; padding:18px }
+    .panel{ background:var(--panel); border:1px solid #1b2030; border-radius:12px; padding:16px }
+    .phasebar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+    .chip{ padding:6px 10px; border-radius:999px; border:1px solid #1b2030; font-size:12px; color:#9aa4b2 }
+    .chip.active{ background:#1a2140; color:#fff; border-color:#28325a }
+    .scene-title{ font-weight:700; margin:0 0 8px }
+    .scene-text{ color:#d9dde6; margin:0 0 8px }
+    .actions{ margin-top:10px; display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) }
+    .act{ padding:10px; background:#121829; border:1px solid #26304d; border-radius:8px; cursor:pointer }
+    .infobox h4{ margin:0 0 8px 0; font-size:14px; color:#bac2cf }
+    .infobox ul{ margin:0; padding-left:16px }
+    .metrics{ display:grid; gap:8px; margin-top:12px }
   </style>
 </head>
 <body>
   <header>
     <h1>Policy-Sim (Normalbetrieb)</h1>
 
-  
-    <select id="speed">
-      <option value="0.5">Cinematic (~4 min/Phase)</option>
-      <option value="1.0" selected>Normal (~2 min/Phase)</option>
-      <option value="2.0">Schnell (~1 min/Phase)</option>
-    </select>
+    <div>
+      <label for="speed" style="display:block;font-size:12px;color:var(--muted)">Tempo</label>
+      <select id="speed">
+        <option value="0.5">Cinematic (~4 min/Phase)</option>
+        <option value="1.0" selected>Normal (~2 min/Phase)</option>
+        <option value="2.0">Schnell (~1 min/Phase)</option>
+      </select>
+    </div>
 
-    <button id="start" class="primary">Start</button>
-    <button id="skip">Szene überspringen</button>
-    <button id="restart">Neues Thema</button>
+    <div style="display:flex; gap:8px; align-items:end">
+      <button id="start" class="primary">Start</button>
+      <button id="skip">Szene überspringen</button>
+      <button id="restart">Neues Thema</button>
+    </div>
   </header>
 
   <main>
+    <!-- linkes Panel: Story -->
     <section class="panel">
       <div class="phasebar" id="phasebar"></div>
       <h2 class="scene-title" id="sceneTitle">Willkommen</h2>
       <p class="scene-text" id="sceneText">Wähle ein Thema und starte den Probedurchlauf.</p>
       <div class="actions" id="actions"></div>
-      <div class="vote" id="vote" style="display:none"></div>
     </section>
 
+    <!-- rechtes Panel: Info + Dropdown + Metriken -->
     <aside class="panel">
       <div class="infobox">
         <h4>Info</h4>
         <ul id="info"></ul>
       </div>
+
       <div class="metrics" id="metrics"></div>
-     <div style="margin-top:10px">
-  <label style="display:block;font-size:12px">Thema</label>
-  <select id="topic" style="width:100%"></select>
-</div>
+
+      <div style="margin-top:10px">
+        <label style="display:block;font-size:12px;color:var(--muted)">Thema</label>
+        <!-- WICHTIG: Es gibt GENAU EIN select mit id="topic" -->
+        <select id="topic" style="width:100%"></select>
+      </div>
     </aside>
   </main>
 
-  <!-- PyScript config must use the 2024.x tag syntax -->
+  <!-- PyScript-Konfiguration: 2024.x -->
   <script type="py-config">
 packages = []
   </script>
 
+  <!-- App-Logik (Python) -->
   <script type="py">
-from dataclasses import dataclass
 from typing import Dict, List, Tuple
 from js import document, window
 import random, math
 
+# ---------- kleine DOM-Hilfen ----------
+def qs(id_or_selector: str):
+    """Wenn '#…' übergeben wird, nutze querySelector; sonst getElementById."""
+    if id_or_selector.startswith("#"):
+        return document.querySelector(id_or_selector)
+    return document.getElementById(id_or_selector)
+
+def set_text(id_: str, txt: str):
+    el = qs(id_)
+    if el is not None:
+        el.textContent = txt
+
+def set_html(id_: str, html: str):
+    el = qs(id_)
+    if el is not None:
+        el.innerHTML = html
+
 # ---------- Daten ----------
 MBTI = ["ENTJ","INTJ","ENTP","INTP","ENFJ","INFJ","ENFP","INFP","ESTJ","ISTJ","ESFJ","ISFJ","ESTP","ISTP","ESFP","ISFP"]
 
-DISC = ["Volkswirtschaft","Public Health","Epidemiologie","Klimawissenschaft",
-        "Energiesysteme","Recht","Ethik/Grundrechte","Daten-/IT-Sicherheit",
-        "Implementation/Verwaltung","Statistik/Methoden","Sozialpolitik",
-        "Verkehr/Infrastruktur","Kommunikation","EU-Recht"]
+DISC = [
+    "Volkswirtschaft","Public Health","Energiesysteme","Recht",
+    "Ethik/Grundrechte","Daten-/IT-Sicherheit","Implementation/Verwaltung",
+    "Statistik/Methoden","Verkehr/Infrastruktur","Kommunikation"
+]
 
-# Themen (Schlüssel erscheinen im Dropdown)
+# Themen: Schlüssel erscheinen im Dropdown
 PROBLEMS: Dict[str, List[str]] = {
-    "KI-Regulierung in Behörden": ["Daten-/IT-Sicherheit","EU-Recht","Implementation/Verwaltung","Statistik/Methoden"],
-    "Energiewende & Netzausbau": ["Energiesysteme","Klimawissenschaft","Recht","Verkehr/Infrastruktur"],
-    "Wohnungsbau & Mieten": ["Volkswirtschaft","Sozialpolitik","Recht","Statistik/Methoden"],
-    "Gesundheitsreform": ["Public Health","Epidemiologie","Volkswirtschaft","Sozialpolitik"],
+    "KI-Regulierung in Behörden": ["Daten-/IT-Sicherheit","Recht","Ethik/Grundrechte","Implementation/Verwaltung"],
+    "Energiewende & Netzausbau": ["Energiesysteme","Volkswirtschaft","Verkehr/Infrastruktur","Statistik/Methoden"],
+    "Wohnungsbau & Mieten": ["Volkswirtschaft","Recht","Kommunikation","Implementation/Verwaltung"],
+    "Gesundheitsreform": ["Public Health","Volkswirtschaft","Statistik/Methoden","Ethik/Grundrechte"],
     "Cybersicherheit Staat": ["Daten-/IT-Sicherheit","Recht","Implementation/Verwaltung","Kommunikation"],
-    "Schule & Digitalisierung": ["Implementation/Verwaltung","Daten-/IT-Sicherheit","Statistik/Methoden","Sozialpolitik"],
+    "Schule & Digitalisierung": ["Implementation/Verwaltung","Daten-/IT-Sicherheit","Kommunikation","Statistik/Methoden"]
 }
-# Dropdown "topic" mit Schlüsseln füllen
-topic_sel = document.getElementById("topic")
-topic_sel.innerHTML = "".join(f'<option value="{k}">{k}</option>' for k in PROBLEMS.keys())
-topic_sel.value = next(iter(PROBLEMS))  # erstes Thema voreinstellen
+
+# Phaseninfo (für die Info-Box)
 PINFO: Dict[str, List[str]] = {
-    "P1": ["Nur FachBEREICHE werden zuerst festgelegt, nicht konkrete Namen."],
-    "P2": ["Thema wird auf Plattform veröffentlicht; Expert*innen bewerben sich."],
-    "P3": ["Standard: max. zwei Vertreter pro Bereich; Diversität wird beachtet."],
-    "P4": ["Runde 1: Evidenz, Wechselwirkungen, Nebenfolgen; Runde 2: Umsetzung."],
-    "P5": ["Politische Abwägung und Entscheidung mit Begründung."],
+    "P1": ["Nur FachBEREICHE werden zuerst festgelegt.","Gremienaufbau, keine Inhalte."],
+    "P2": ["Thema wird auf Plattform veröffentlicht.","Beteiligte melden sich an."],
+    "P3": ["Standard: max. zwei Vertreter pro Bereich.","Diversität sichern."],
+    "P4": ["Runde 1: Evidenz, Wechselwirkungen, Nebenfolgen.","Runde 2: Maßnahmenbündel."],
+    "P5": ["Politische Abwägung und Entscheidung."]
 }
 
-@dataclass
+# ---------- Modelle (minimal gehalten) ----------
 class Agent:
-    name: str
-    role: str  # "Regierung", "Opposition", "Zivil", "Wirtschaft", "Verwaltung", "Experte"
-    disc: str
-    mbti: str
-
-def mk_name(prefix: str, idx: int) -> str:
-    return f"{prefix}#{idx}"
+    def __init__(self, name: str, role: str, disc: str, mbti: str):
+        self.name = name
+        self.role = role
+        self.disc = disc
+        self.mbti = mbti
 
 def political_pool() -> List[Agent]:
-    pool: List[Agent] = []
-    roles = [("Regierungsführung","Regierung",4),
-             ("Oppositionsführung","Opposition",4),
-             ("Wirtschaft","Wirtschaft",6),
-             ("Zivilgesellschaft","Zivil",6),
-             ("Verwaltung","Verwaltung",6)]
-    for pref, role, n in roles:
-        for i in range(1, n+1):
-            disc = random.choice(DISC)
-            pool.append(Agent(mk_name(pref,i), role, disc, random.choice(MBTI)))
-    return pool
+    people = []
+    roles = ["Regierung","Opposition","Verwaltung","Wissenschaft"]
+    # Konstruiere ein kleines, aber gemischtes Gremium
+    for i in range(16):
+        people.append(Agent(
+            name=f"Person {i+1}",
+            role=random.choice(roles),
+            disc=random.choice(DISC),
+            mbti=random.choice(MBTI),
+        ))
+    return people
 
-def expert_registry() -> Dict[str, List[Agent]]:
-    reg: Dict[str, List[Agent]] = {}
-    for d in DISC:
-        reg[d] = [Agent(mk_name("Expertin", i), "Experte", d, random.choice(MBTI)) for i in range(1, 6)]
-    return reg
+def pick_members(sector_keys: List[str], pool: List[Agent], per_sector: int = 2) -> Dict[str, List[Agent]]:
+    """Wählt je Sektor Vertreter aus dem Pool."""
+    out: Dict[str, List[Agent]] = {}
+    for d in sector_keys:
+        cand = [p for p in pool if p.disc == d]
+        if len(cand) < per_sector:
+            # auffüllen aus Rest
+            rest = [p for p in pool if p.disc != d]
+            cand = cand + random.sample(rest, k=max(0, per_sector - len(cand)))
+        out[d] = random.sample(cand, k=min(per_sector, len(cand)))
+    return out
 
-def pick_members(scopes: List[str], pool: List[Agent], reg: Dict[str, List[Agent]]) -> Dict[str, List[Agent]]:
-    # wähle je Bereich max zwei Expert*innen
-    result: Dict[str, List[Agent]] = {}
-    for d in scopes:
-        lst = reg.get(d, [])
-        random.shuffle(lst)
-        result[d] = lst[:2]
-    return result
-
-# ---------- UI Hilfen ----------
-def qs(id_: str):
-    return document.getElementById(id_)
-
-def set_text(id_: str, txt: str):
-    qs(id_).textContent = txt
-
-def set_html(id_: str, html: str):
-    qs(id_).innerHTML = html
-
-def hide(id_: str):
-    qs(id_).style.display = "none"
-
-def show(id_: str, disp="block"):
-    qs(id_).style.display = disp
-
-def render_phasebar(phases: List[str], active_index: int):
-    el = qs("phasebar")
-    el.innerHTML = ""
-    for i, ph in enumerate(phases):
-        chip = document.createElement("div")
-        chip.classList.add("chip")
-        if i == active_index:
-            chip.classList.add("active")
-        chip.textContent = ph
-        el.appendChild(chip)
-
-def render_vote(yes: int, tot: int):
-    pct = 0 if tot == 0 else round(100*yes/tot)
-    qs("vote").innerHTML = f"<b>Abstimmung:</b> {yes}/{tot} Stimmen, {pct}% Zustimmung"
-    show("vote")
-
-def clear_vote():
-    hide("vote")
-    qs("vote").innerHTML = ""
-
-def metric(name: str, value: float):
-    # einfache Balkenanzeige 0..1
-    pct = max(0, min(100, int(value*100)))
-    wrap = document.createElement("div")
-    wrap.classList.add("barwrap")
-    bar = document.createElement("div")
-    bar.classList.add("bar")
-    bar.style.width = f"{pct}%"
-    bar.style.background = "linear-gradient(90deg,#3478f6,#42d392)"
-    lab = document.createElement("div"); lab.classList.add("lab"); lab.textContent = name
-    val = document.createElement("div"); val.classList.add("val"); val.textContent = f"{pct}%"
-    wrap.appendChild(bar); wrap.appendChild(lab); wrap.appendChild(val)
-    qs("metrics").appendChild(wrap)
-
-# ---------- Storyboard ----------
-Scene = Dict[str, object]
-
-def describe_experts(experts: Dict[str, List[Agent]]) -> List[str]:
-    lines: List[str] = []
-    for d, lst in experts.items():
-        names = ", ".join(f"{e.name.split('#')[0]} ({e.mbti})" for e in lst)
-        lines.append(f"{d}: {names}" if names else f"{d}: –")
-    return lines
-
-def deliberate(experts: Dict[str, List[Agent]]) -> Tuple[str, Dict[str, float]]:
-    # sehr vereinfachte "Bewertung" als Mittelwert: jede Disziplin gibt 0..1 Punkt
-    vals: Dict[str, float] = {}
-    for d, lst in experts.items():
-        x = 0.5 + 0.1*(len(lst)) + (random.random()-0.5)*0.2
-        vals[d] = max(0.0, min(1.0, x))
-    # Gesamtscore für Entscheidung:
-    score = sum(vals.values()) / max(1, len(vals))
-    rationale = f"Gesamtscore (Evidenz & Umsetzbarkeit): {round(score*100)}%."
-    return rationale, vals
-
-def decide(polit_core: List[Agent], score: float) -> Tuple[str, int, int]:
-    tot = len(polit_core)
-    bias = 0.1 * (1 if score >= 0.5 else -1)
-    yes = 0
-    for _ in range(tot):
-        base = score + bias + (random.random()-0.5)*0.2
-        if base >= 0.5: yes += 1
-    decision = "ADOPT" if yes >= math.ceil(2*tot/3) else ("PILOT" if yes >= math.ceil(tot/2) else "REJECT")
+# ---------- Storyboard (Szene-Generator) ----------
+def decide(core: Dict[str, List[Agent]]) -> Tuple[str, int, int]:
+    """Spielerische Abstimmung: zufälliger Score -> 'ADOPT' oder 'REJECT'."""
+    yes = random.randint(8, 14)
+    tot = 20
+    decision = "ADOPT" if yes >= 12 else "REJECT"
     return decision, yes, tot
 
-def storyboard(topic: str, speed: float) -> List[Scene]:
+def storyboard(topic: str, speed: float):
     pool = political_pool()
-    reg = expert_registry()
-    scopes = PROBLEMS.get(topic, [])[:]
-    polit_core = [a for a in pool if a.role in ("Regierung","Verwaltung")][:8]
+    sectors = PROBLEMS.get(topic, [])
+    experts = pick_members(sectors, pool, per_sector=2)
 
-    scenes: List[Scene] = []
-    # P1 – Thema/Scopes
+    # Kleine Beschreibungen je Phase
+    scenes = []
+
+    # P1 – Thema & Bereiche
+    lines = [
+        f"Gewähltes Thema: {topic}",
+        "Fachbereiche werden festgelegt:",
+        ", ".join(sectors) if sectors else "(keine Sektoren definiert)"
+    ]
     scenes.append({
         "phase":"P1",
-        "title":"Thema & Fachbereiche festlegen",
-        "lines":[f"Thema: {topic}"] + PINFO["P1"] + ["Fachbereiche: " + ", ".join(scopes)],
-        "acts":[("Weiter", "next")],
+        "title":"Thema & Bereiche",
+        "lines":lines,
+        "acts":[("Gremium aufbauen","next")]
     })
-    # P2 – Ausschreibung
+
+    # P2 – Gremium bestätigen (zeige ausgewählte Expert:innen)
+    explines = [
+        f"{d}: " + ", ".join(f"{e.name} ({e.mbti})" for e in lst)
+        for d, lst in experts.items()
+    ]
     scenes.append({
         "phase":"P2",
-        "title":"Ausschreibung & Bewerbungen",
-        "lines":PINFO["P2"],
-        "acts":[("Bewerbungen sichten", "next")],
+        "title":"Gremium bestätigen",
+        "lines":["Ausgewählte Expert:innen:"] + explines,
+        "acts":[("Weiter","next")]
     })
-    # P3 – Auswahl
-    experts = pick_members(scopes, pool, reg)
+
+    # P3 – Beratungsvorbereitung
     scenes.append({
         "phase":"P3",
-        "title":"Gremium zusammenstellen",
-        "lines":["Ausgewählte Expert:innen:"] + describe_experts(experts),
-        "acts":[("Gremium bestätigen", "next")],
+        "title":"Evidenz zusammentragen",
+        "lines":[
+            "Runde 1: Problembeschreibung, Nebenwirkungen, Wechselwirkungen.",
+            "Runde 2: Maßnahmenbündel entwerfen."
+        ],
+        "acts":[("Zur Beratung","next")]
     })
-    # P4 – Beratung
-    rationale, vals = deliberate(experts)
+
+    # P4 – Beratung (Pseudo-Metriken)
+    vals = { "Evidenz": random.uniform(0.4, 0.9), "Akzeptanz": random.uniform(0.3, 0.8) }
     scenes.append({
         "phase":"P4",
         "title":"Beratung & Evidenz",
-        "lines":[rationale, "Zwischenindikatoren werden aktualisiert."],
-        "metrics":vals,
-        "acts":[("Zur Abstimmung", "next")],
+        "lines":[
+            "Evidenz wird präsentiert und diskutiert.",
+            "Metriken werden laufend aktualisiert."
+        ],
+        "metrics": vals,
+        "acts":[("Zur Abstimmung","next")]
     })
+
     # P5 – Entscheidung
-    score = sum(vals.values())/max(1,len(vals))
-    decision, yes, tot = decide(polit_core, score)
-    vt = f"Abstimmung über Maßnahmenpaket ({topic})"
+    decision, yes, tot = decide(experts)
     scenes.append({
         "phase":"P5",
         "title":"Politische Entscheidung",
-        "lines":[f"Ergebnis: {decision}.", f"{yes}/{tot} Stimmen zustimmend."],
-        "vote":(yes, tot),
-        "acts":[("Beenden", "end")],
+        "lines":[f"Ergebnis: {decision}. Stimmen: {yes}/{tot}"],
+        "vote": (yes, tot),
+        "acts":[("Beenden","end")]
     })
+
     return scenes
 
-# ---------- Ablaufsteuerung ----------
-SCENES: List[Scene] = []
+# ---------- Rendering ----------
+SCENES: List[dict] = []
 idx = -1
-remaining = 0
 timer = None
 
+def render_phasebar():
+    chips = []
+    for i, s in enumerate(SCENES):
+        cls = "chip active" if i == idx else "chip"
+        chips.append(f'<span class="{cls}">{s["phase"]}</span>')
+    set_html("phasebar", "".join(chips))
+
 def set_info(lines: List[str]):
-    ul = qs("info"); ul.innerHTML = ""
-    for ln in lines:
-        li = document.createElement("li")
-        li.textContent = ln
-        ul.appendChild(li)
+    set_html("info", "".join(f"<li>{l}</li>" for l in lines))
+
+def set_metrics(vals: Dict[str, float] | None):
+    if not vals:
+        set_html("metrics","")
+        return
+    rows = []
+    for k,v in vals.items():
+        rows.append(f'<div>{k}: {round(v*100):d}%</div>')
+    set_html("metrics","".join(rows))
 
 def render_scene():
-    global SCENES, idx
-    scene = SCENES[idx]
-    phases = [s["phase"] for s in SCENES]
-    render_phasebar(phases, idx)
+    s = SCENES[idx]
+    set_text("sceneTitle", s.get("title",""))
+    set_text("sceneText",  " ".join(s.get("lines",[])))
+    set_metrics(s.get("metrics"))
 
-    set_text("sceneTitle", scene["title"])
-    set_html("sceneText", "<br>".join(scene.get("lines", [])))
+    # Buttons
+    acts = s.get("acts",[])
+    html = "".join(f'<button class="act" data-key="{key}">{label}</button>' for (label,key) in acts)
+    set_html("actions", html)
 
-    # metrics
-    qs("metrics").innerHTML = ""
-    for name, val in scene.get("metrics", {}).items():
-        metric(name, float(val))
-
-    # vote box
-    clear_vote()
-    if "vote" in scene:
-        y, t = scene["vote"]
-        render_vote(y, t)
-
-    # actions
-    acts_el = qs("actions"); acts_el.innerHTML = ""
-    for label, code in scene.get("acts", []):
-        btn = document.createElement("button")
-        btn.classList.add("act")
-        btn.textContent = label
-        def handler(ev, c=code):
-            if c == "next":
+    # Klicks binden
+    for btn in document.querySelectorAll("#actions .act"):
+        def _handler(evt, key=btn.getAttribute("data-key")):
+            if key == "next":
                 next_scene()
-            elif c == "end":
-                end_run()
-        btn.addEventListener("click", handler)
-        acts_el.appendChild(btn)
+            elif key == "end":
+                finish()
+        btn.addEventListener("click", _handler)
 
-def next_scene():
-    global idx
+    # Info-Leiste zum Phase Code
+    info = PINFO.get(s.get("phase",""), [])
+    if info:
+        set_info(info)
+
+    render_phasebar()
+
+def next_scene(evt=None):
+    global idx, timer
     idx += 1
     if idx >= len(SCENES):
-        end_run()
+        finish()
         return
     render_scene()
 
-def end_run():
-    set_text("sceneTitle", "Durchlauf beendet")
-    set_text("sceneText", "Du kannst ein neues Thema wählen und erneut starten.")
-    qs("actions").innerHTML = ""
-    clear_vote()
-    render_phasebar([], -1)
+def skip_scene(evt=None):
+    next_scene()
+
+def finish():
+    set_text("sceneTitle","Ende")
+    set_text("sceneText","Danke – Durchlauf beendet.")
+    set_html("actions","")
+    set_metrics(None)
+    render_phasebar()
+
+def restart(evt=None):
+    """Zufälliges Thema übernehmen und UI zurücksetzen."""
+    opts = list(PROBLEMS.keys())
+    if opts:
+        qs("topic").value = random.choice(opts)
+    set_text("sceneTitle","Neuer Durchlauf")
+    set_text("sceneText","Thema gewählt, starte erneut oder passe Einstellungen an.")
+    set_html("actions","")
+    set_metrics(None)
+    render_phasebar()
 
 def start_run(evt=None):
     global SCENES, idx, timer
-    if timer: 
+    if timer:
         window.clearTimeout(timer)
     topic = qs("topic").value
     speed = float(qs("speed").value)
     SCENES = storyboard(topic, speed)
     idx = -1
-    set_info([f"Thema: {topic}", "Phasen: " + ", ".join(s['phase'] for s in SCENES)])
+    set_info([f"Thema: {topic}", f"Phasen: {len(SCENES)}"])
     next_scene()
-
-def skip_scene(evt=None):
-    next_scene()
-
-def restart(evt=None):
-    # wählt ein zufälliges Thema und setzt UI zurück
-    opts = list(PROBLEMS.keys())
-    qs("topic").value = random.choice(opts)
-    set_text("sceneTitle", "Neuer Durchlauf")
-    set_text("sceneText", "Thema gewählt. Klicke auf Start.")
-    qs("actions").innerHTML = ""
-    clear_vote()
-    qs("metrics").innerHTML = ""
-    render_phasebar([], -1)
 
 # ---------- Bootstrap ----------
-# Dropdown mit Themen füllen
-topic_sel = qs("topic"); topic_sel.innerHTML = ""
-for k in PROBLEMS.keys():
-    opt = document.createElement("option")
-    opt.value = k; opt.textContent = k
-    topic_sel.appendChild(opt)
-# Default erstes Thema
+# Dropdown "topic" befüllen (WICHTIG: exakt EIN #topic im DOM)
+topic_sel = qs("topic")
+topic_sel.innerHTML = "".join(
+    f'<option value="{k}">{k}</option>' for k in PROBLEMS.keys()
+)
 if topic_sel.options.length > 0:
     topic_sel.value = topic_sel.options.item(0).value
 
