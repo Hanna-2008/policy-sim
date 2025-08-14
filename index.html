@@ -366,20 +366,36 @@ def restart(evt=None):
     set_metrics(None)
     render_phasebar()
 def start_run(evt=None):
-    """Startet den Durchlauf — robust & mit Debug-Ausgabe."""
+    """Startet den Durchlauf — robust & mit sichtbarem Debug."""
     global SCENES, idx, timer
     try:
+        # ggf. alten Timer stoppen
         if timer:
             window.clearTimeout(timer)
-        topic = by_id("topic").value
-        speed = float(by_id("speed").value)
-        SCENES = storyboard(topic, speed)
-        idx = -1
+
+        # Eingaben holen (robust)
+        topic_el = by_id("topic")
+        speed_el = by_id("speed")
+        topic = topic_el.value if topic_el else ""
+        speed = float(speed_el.value) if (speed_el and speed_el.value) else 1.0
+
+        # sichtbares Debug
         set_info([
-            f"Start geklickt · Thema: {topic}",
-            f"Szenen erzeugt: {len(SCENES)}"
+            f"Start geklickt · Thema: {topic!r}",
+            f"Tempo: {speed}"
         ])
+
+        # Szenen bauen
+        SCENES = storyboard(topic, speed)
+        if not SCENES:
+            set_info(["FEHLER: Keine Szenen erzeugt!"])
+            return
+
+        # ersten Schritt starten
+        idx = -1
+        set_info([f"Szenen erzeugt: {len(SCENES)}", "→ Erste Szene wird gerendert …"])
         next_scene()
+
     except Exception as e:
         set_info([f"START-FEHLER: {e!r}"])
     def bind_buttons():
@@ -420,3 +436,4 @@ document.title = "Policy-Sim ✅"
   </script>
 </body>
 </html>
+
