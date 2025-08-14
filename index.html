@@ -335,15 +335,26 @@ def start_run(evt=None):
     next_scene()
 
 # ---------- Bootstrap ----------
-# Dropdown "topic" befüllen
-topic_sel = qs("#topic")
-topic_sel.innerHTML = "".join(
-    f'<option value="{k}">{k}</option>' for k in PROBLEMS.keys()
-)
-# Default: erstes Thema wählen
-if topic_sel.options.length > 0:
-    topic_sel.value = topic_sel.options.item(0).value
+# Dropdown "topic" befüllen + Debug-Ausgabe
+from js import document
 
+topic_sel = document.getElementById("topic")
+if topic_sel is None:
+    # <select id="topic"> wurde nicht gefunden
+    set_info(["FEHLER: <select id='topic'> nicht gefunden"])
+else:
+    keys = list(PROBLEMS.keys())
+    # kurze Debug-Anzeige in der Info-Box
+    set_info([
+        f"Debug: {len(keys)} Themen gefunden",
+        ", ".join(keys[:6]) + (" …" if len(keys) > 6 else "")
+    ])
+    topic_sel.innerHTML = "".join(
+        f'<option value="{k}">{k}</option>' for k in keys
+    )
+    # Default: erstes Thema wählen
+    if topic_sel.options.length > 0:
+        topic_sel.value = topic_sel.options.item(0).value
 # Buttons verbinden
 qs("#start").addEventListener("click", start_run)
 qs("#skip").addEventListener("click", skip_scene)
