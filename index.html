@@ -53,10 +53,10 @@
 
     <!-- Buttons (py-click = direkt mit Python-Funktionen verbunden) -->
     <div style="display:flex; gap:8px; align-items:center">
-      <button id="start" class="primary" py-click="start_run()">Start</button>
-      <button id="skip"   py-click="skip_scene()">Szene überspringen</button>
-      <button id="restart" py-click="restart()">Neues Thema</button>
-    </div>
+  <button id="start"   class="primary" py-click="start_run()">Start</button>
+  <button id="skip"    py-click="skip_scene()">Szene überspringen</button>
+  <button id="restart" py-click="restart()">Neues Thema</button>
+</div>
   </header>
 
   <main>
@@ -100,10 +100,13 @@
 
   const sel = document.getElementById("topic");
   if (sel) {
-    sel.innerHTML = PROBLEM_KEYS.map(k => `<option value="${k}">${k}</option>`).join("");
-if (sel.options.length) sel.value = sel.options.item(0).value;
-    const info = document.getElementById("info");
-if (info) info.innerHTML = `<li>Dropdown gefüllt ✅: ${sel.options.length} Themen</li>`;
+    sel.innerHTML = PROBLEM_KEYS
+  .map(k => `<option value="${k}">${k}</option>`)
+  .join('');
+if (sel.options.length) sel.value = sel.options[0].value;
+
+const info = document.getElementById("info");
+if (info) info.innerHTML = `<li>Dropdown geladen – ${sel.options.length} Themen</li>`;
   }
 </script>
 
@@ -117,7 +120,8 @@ packages = []
 from typing import Dict, List, Tuple
 from js import document, window
 import random, math
-
+def by_id(id_: str):
+    return document.getElementById(id_)
 # ---------- kleine DOM-Hilfen ----------
 def by_id(id_: str):
     return document.getElementById(id_)
@@ -360,11 +364,12 @@ def restart(evt=None):
     set_html("actions","")
     set_metrics(None)
     render_phasebar()
-
 def start_run(evt=None):
-    """Startet den Durchlauf – robust & mit Debug-Info in der Info-Box."""
+    """Startet den Durchlauf — robust & mit Debug-Ausgabe."""
     global SCENES, idx, timer
     try:
+        if timer:
+            window.clearTimeout(timer)
         topic = by_id("topic").value
         speed = float(by_id("speed").value)
         SCENES = storyboard(topic, speed)
@@ -376,7 +381,6 @@ def start_run(evt=None):
         next_scene()
     except Exception as e:
         set_info([f"START-FEHLER: {e!r}"])
-
 # ---------- Bootstrap ----------
 def populate_topics():
     """Befüllt den Select #topic immer zuverlässig."""
