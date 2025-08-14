@@ -76,7 +76,33 @@
       </div>
     </aside>
   </main>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Beispiel-Themen – Hauptsache: Dropdown füllt sich
+  const PROBLEMS = {
+    "KI-Regulierung in Behörden": [],
+    "Energiewende & Netzausbau": [],
+    "Wohnungsbau & Mieten": [],
+    "Gesundheitsreform": [],
+    "Cybersicherheit Staat": [],
+    "Schule & Digitalisierung": []
+  };
 
+  const sel  = document.getElementById('topic');
+  const info = document.getElementById('info');
+
+  if (!sel) {
+    if (info) info.innerHTML = '<li>FEHLER: #topic nicht gefunden</li>';
+    return;
+  }
+
+  const keys = Object.keys(PROBLEMS);
+  sel.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (keys.length) sel.value = keys[0];
+
+  if (info) info.innerHTML = `<li>Dropdown gefüllt: ${keys.length} Themen</li>`;
+});
+</script>
   <!-- PyScript-Konfiguration: 2024.x -->
   <script type="py-config">
 packages = []
@@ -335,27 +361,7 @@ def start_run(evt=None):
     set_info([f"Thema: {topic}", f"Phasen: {len(SCENES)}"])
     next_scene()
 
-# ---------- Bootstrap ----------
-# Dropdown "topic" befüllen + Debug-Ausgabe
-from js import document
 
-topic_sel = document.getElementById("topic")
-if topic_sel is None:
-    # <select id="topic"> wurde nicht gefunden
-    set_info(["FEHLER: <select id='topic'> nicht gefunden"])
-else:
-    keys = list(PROBLEMS.keys())
-    # kurze Debug-Anzeige in der Info-Box
-    set_info([
-        f"Debug: {len(keys)} Themen gefunden",
-        ", ".join(keys[:6]) + (" …" if len(keys) > 6 else "")
-    ])
-    topic_sel.innerHTML = "".join(
-        f'<option value="{k}">{k}</option>' for k in keys
-    )
-    # Default: erstes Thema wählen
-    if topic_sel.options.length > 0:
-        topic_sel.value = topic_sel.options.item(0).value
 # Buttons verbinden
 qs("#start").addEventListener("click", start_run)
 qs("#skip").addEventListener("click", skip_scene)
