@@ -376,13 +376,16 @@ next_scene()
 
 
 # Buttons verbinden
-_start_proxy   = create_proxy(start_run)
-_skip_proxy    = create_proxy(skip_scene)
-_restart_proxy = create_proxy(restart)
+    # Buttons verbinden (Proxys am window-Objekt festhalten)
+from pyodide.ffi import create_proxy  # sicherheitshalber nochmal
 
-qs("#start").addEventListener("click", _start_proxy)
-qs("#skip").addEventListener("click", _skip_proxy)
-qs("#restart").addEventListener("click", _restart_proxy)
+window._start_proxy   = create_proxy(start_run)
+window._skip_proxy    = create_proxy(skip_scene)
+window._restart_proxy = create_proxy(restart)
+
+qs("#start").addEventListener("click",   window._start_proxy)
+qs("#skip").addEventListener("click",    window._skip_proxy)
+qs("#restart").addEventListener("click", window._restart_proxy)
   </script>
 </body>
 </html>
