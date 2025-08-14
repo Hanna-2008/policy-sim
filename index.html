@@ -316,7 +316,7 @@ def restart(evt=None):
     """Zufälliges Thema übernehmen und UI zurücksetzen."""
     opts = list(PROBLEMS.keys())
     if opts:
-        qs("topic").value = random.choice(opts)
+        qs("#topic").value = random.choice(opts)
     set_text("sceneTitle","Neuer Durchlauf")
     set_text("sceneText","Thema gewählt, starte erneut oder passe Einstellungen an.")
     set_html("actions","")
@@ -327,15 +327,15 @@ def start_run(evt=None):
     global SCENES, idx, timer
     if timer:
         window.clearTimeout(timer)
-    topic = qs("topic").value
-    speed = float(qs("speed").value)
+    topic = qs("#topic").value
+    speed = float(qs("#speed").value)
     SCENES = storyboard(topic, speed)
     idx = -1
     set_info([f"Thema: {topic}", f"Phasen: {len(SCENES)}"])
     next_scene()
 
 # ---------- Bootstrap ----------
-# Dropdown "topic" befüllen (WICHTIG: exakt EIN #topic im DOM)
+# Dropdown "#topic" befüllen (WICHTIG: exakt EIN #topic im DOM)
 topic_sel = qs("topic")
 topic_sel.innerHTML = "".join(
     f'<option value="{k}">{k}</option>' for k in PROBLEMS.keys()
@@ -344,9 +344,9 @@ if topic_sel.options.length > 0:
     topic_sel.value = topic_sel.options.item(0).value
 
 # Buttons verbinden
-qs("start").addEventListener("click", start_run)
-qs("skip").addEventListener("click", skip_scene)
-qs("restart").addEventListener("click", restart)
+qs("#start").addEventListener("click", start_run)
+qs("#skip").addEventListener("click", skip_scene)
+qs("#restart").addEventListener("click", restart)
   </script>
 </body>
 </html>
