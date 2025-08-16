@@ -13,7 +13,7 @@
     :root { color-scheme: dark; --bg:#0b0d12; --panel:#0f1320; --accent:#2f6feb; }
     *{ box-sizing:border-box }
     body{ margin:0; background:var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:#d9dde6 }
-    header{ padding:14px 18px; border-bottom:1px solid #22283a; display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap }
+    header{ padding:14px 18px; border-bottom:1px solid #22283a; display:flex; gap:14px; align-items:center; flex-wrap:wrap }
     header h1{ font-size:18px; margin:0 8px 0 0 }
     select,button,input{ background:#0f1320; border:1px solid #2a3250; color:#d9dde6; padding:8px 10px; border-radius:8px }
     button.primary{ background:var(--accent); border-color:var(--accent); color:white }
@@ -22,10 +22,10 @@
     .phasebar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px }
     .chip{ padding:6px 10px; border-radius:999px; border:1px solid #2a3250; font-size:12px }
     .chip.active{ background:#1a2140; color:#7eb0ff; border-color:#385ca8 }
-    .scene-title{ font-weight:700; margin:4px 0 4px 0 }
+    .scene-title{ font-weight:700; margin:0 0 4px 0 }
     .scene-text{ color:#d9dde6; margin:0 0 10px 0 }
     .actions{ margin-top:10px; display:grid; grid-auto-flow:column; gap:8px; width:max-content }
-    .act{ padding:10px; background:#121829; border:1px solid #2a3250; border-radius:8px; cursor:pointer }
+    .act{ padding:10px; background:#121829; border:1px solid #2a3250; border-radius:8px }
     .infobox h4{ margin:0 0 8px 0; font-size:14px; color:#9fb4ff }
     .infobox ul{ margin:0; padding-left:16px }
     .metrics{ display:grid; gap:8px; margin-top:8px; font-size:14px }
@@ -34,9 +34,6 @@
     .lab{ position:absolute; left:10px; top:10px; font-size:12px; color:#9fb4ff }
     .val{ position:absolute; right:10px; top:10px; font-size:12px; color:#9fb4ff }
     .vote{ margin-top:12px; padding:10px; background:#10162a; border:1px dashed #2a3250; border-radius:10px; font-size:14px }
-    /* Timer-Progress */
-    .timer{ margin:6px 0 10px; height:6px; background:#0f1320; border:1px solid #2a3250; border-radius:999px; position:relative; overflow:hidden }
-    .timer > i{ position:absolute; inset:0 auto 0 0; width:0; background:var(--accent); opacity:.6; transition:width .25s linear }
     @media (max-width:860px){ main{ grid-template-columns: 1fr } }
   </style>
 </head>
@@ -47,48 +44,36 @@
     <!-- Tempo -->
     <div>
       <label for="speed" style="display:block;font-size:12px;color:#9fb4ff">Tempo</label>
-      <select id="speed" aria-label="Simulationsgeschwindigkeit">
+      <select id="speed">
         <option value="0.5">Cinematic (~4 min/Phase)</option>
         <option value="1.0" selected>Normal (~2 min/Phase)</option>
         <option value="2.0">Schnell (~1 min/Phase)</option>
       </select>
     </div>
 
-    <!-- Steuerung -->
+    <!-- Buttons (py-click = direkt mit Python-Funktionen verbunden) -->
     <div style="display:flex; gap:8px; align-items:center">
-      <button id="start" class="primary" py-click="start_run">Start</button>
-      <button id="auto" aria-pressed="false" py-click="toggle_auto">Auto</button>
-      <button id="skip"   py-click="skip_scene">Szene überspringen</button>
-      <button id="restart" py-click="restart">Neues Thema</button>
-      <button id="export"  py-click="export_run">Export</button>
-    </div>
-
-    <!-- Seed (optional) -->
-    <div>
-      <label for="seed" style="display:block;font-size:12px;color:#9fb4ff">Seed (optional)</label>
-      <input id="seed" inputmode="numeric" pattern="[0-9]*" style="width:10ch" placeholder="z. B. 42" />
-    </div>
+  <button id="start"   class="primary" py-click="start_run()">Start</button>
+  <button id="skip"    py-click="skip_scene()">Szene überspringen</button>
+  <button id="restart" py-click="restart()">Neues Thema</button>
+</div>
   </header>
 
   <main>
     <!-- linkes Panel: Story -->
     <section class="panel">
       <div class="phasebar" id="phasebar"></div>
-
-      <!-- Timer-Balken -->
-      <div class="timer" id="timer" aria-hidden="true"><i></i></div>
-
-      <h2 class="scene-title" id="sceneTitle" tabindex="-1">Willkommen</h2>
-      <p class="scene-text" id="sceneText" role="status" aria-live="polite">Wähle ein Thema und starte den Probedurchlauf.</p>
+      <h2 class="scene-title" id="sceneTitle">Willkommen</h2>
+      <p class="scene-text" id="sceneText">Wähle ein Thema und starte den Probedurchlauf.</p>
       <div class="actions" id="actions"></div>
-      <div class="vote" id="vote" style="display:none" aria-live="polite"></div>
+      <div class="vote" id="vote" style="display:none"></div>
     </section>
 
     <!-- rechtes Panel: Info + Dropdown + (Pseudo)-Metriken -->
     <aside class="panel">
       <div class="infobox">
         <h4>Info</h4>
-        <ul id="info" role="status" aria-live="polite"></ul>
+        <ul id="info"></ul>
       </div>
 
       <div class="metrics" id="metrics"></div>
@@ -101,6 +86,30 @@
     </aside>
   </main>
 
+
+<!-- Fallback: Dropdown-Themen per JavaScript -->
+<script>
+  const PROBLEM_KEYS = [
+    "KI-Regulierung in Behörden",
+    "Energiewende & Netzausbau",
+    "Wohnungsbau & Mieten",
+    "Gesundheitsreform",
+    "Cybersicherheit Staat",
+    "Schule & Digitalisierung"
+  ];
+
+  const sel = document.getElementById("topic");
+  if (sel) {
+    sel.innerHTML = PROBLEM_KEYS
+  .map(k => `<option value="${k}">${k}</option>`)
+  .join('');
+if (sel.options.length) sel.value = sel.options[0].value;
+
+const info = document.getElementById("info");
+if (info) info.innerHTML = `<li>Dropdown geladen – ${sel.options.length} Themen</li>`;
+  }
+</script>
+
   <!-- PyScript-Konfiguration (keine extra Packages nötig) -->
   <script type="py-config">
 packages = []
@@ -109,13 +118,10 @@ packages = []
   <!-- App-Logik (Python) -->
   <script type="py">
 from typing import Dict, List, Tuple
-from dataclasses import dataclass
-from js import document
-from js import Blob, URL, localStorage
-import asyncio
-import random
-import json
-
+from js import document, window
+import random, math
+def by_id(id_: str):
+    return document.getElementById(id_)
 # ---------- kleine DOM-Hilfen ----------
 def by_id(id_: str):
     return document.getElementById(id_)
@@ -135,7 +141,7 @@ MBTI = ["ENTJ","INTJ","ENTP","INTP","ENFJ","INFJ","ISTP","ISFJ"]
 DISC = [
     "Volkswirtschaft","Public Health","Energiesysteme","Recht",
     "Ethik/Grundrechte","Daten-/IT-Sicherheit","Statistik/Methoden",
-    "Verkehr/Infrastruktur","Kommunikation","Implementierung/Verwaltung"
+    "Verkehr/Infrastruktur","Kommunikation"
 ]
 
 # Themen → Dropdown-Schlüssel (sichtbar wie geschrieben)
@@ -157,13 +163,13 @@ PINFO: Dict[str, List[str]] = {
     "P5": ["Politische Abwägung und Entscheidung"],
 }
 
-# ---------- Modelle ----------
-@dataclass
+# ---------- Modelle (minimal) ----------
 class Agent:
-    name: str
-    role: str
-    disc: str
-    mbti: str
+    def __init__(self, name: str, role: str, disc: str, mbti: str):
+        self.name = name
+        self.role = role
+        self.disc = disc
+        self.mbti = mbti
 
 def political_pool() -> List[Agent]:
     people: List[Agent] = []
@@ -184,11 +190,8 @@ def pick_members(sector_keys: List[str], pool: List[Agent], per_sector: int = 2)
         cand = [p for p in pool if p.disc == d]
         rest = [p for p in pool if p.disc != d]
         if len(cand) < per_sector:
-            # aus anderen Disziplinen auffüllen, falls nötig
-            need = max(0, per_sector - len(cand))
-            if need > 0 and len(rest) > 0:
-                cand = cand + random.sample(rest, k=min(need, len(rest)))
-        out[d] = random.sample(cand, k=min(per_sector, len(cand))) if cand else []
+            cand = cand + random.sample(rest, k=min(per_sector - len(cand), len(rest)))
+        out[d] = random.sample(cand, k=min(per_sector, len(cand)))
     return out
 
 # ---------- Storyboard (Szenen) ----------
@@ -199,7 +202,7 @@ def decide(core: Dict[str, List[Agent]]) -> Tuple[str, int, int]:
     decision = "ADOPT" if yes >= 12 else "REJECT"
     return decision, yes, tot
 
-def storyboard(topic: str) -> List[dict]:
+def storyboard(topic: str, speed: float) -> List[dict]:
     pool = political_pool()
     sectors = PROBLEMS.get(topic, [])
     experts = pick_members(sectors, pool)
@@ -221,7 +224,7 @@ def storyboard(topic: str) -> List[dict]:
 
     # P2 — Gremium bestätigen (zeige ausgewählte Expert:innen)
     explines = [
-        f"{d}: " + ", ".join(f"{e.name} ({e.role})" for e in lst) if lst else f"{d}: (keine Auswahl)"
+        f"{d}: " + ", ".join(f"{e.name} ({e.role})" for e in lst)
         for d, lst in experts.items()
     ]
     scenes.append({
@@ -267,9 +270,10 @@ def storyboard(topic: str) -> List[dict]:
 
     return scenes
 
-# ---------- Rendering & State ----------
+# ---------- Rendering ----------
 SCENES: List[dict] = []
 idx = -1
+timer = None  # (hier nur placeholder für evtl. spätere Timer-Erweiterungen)
 
 def render_phasebar():
     chips: List[str] = []
@@ -304,36 +308,19 @@ def render_scene():
     set_text("sceneTitle", s.get("title",""))
     set_text("sceneText",  " · ".join(s.get("lines",[])))
     set_metrics(s.get("metrics"))
+    # Voting-Box optional
     clear_vote()
-
-    # Interaktive Vote-Box (falls vorhanden)
     if "vote" in s:
         yes, tot = s["vote"]
         el = by_id("vote")
         el.style.display = "block"
-        el.innerHTML = (
-            "<div><strong>Abstimmung</strong> · "
-            f"{tot} Stimmen Gesamt</div>"
-            '<div style="margin-top:8px">'
-            '<label><input type="radio" name="myvote" value="yes" checked> Ja</label> '
-            '<label><input type="radio" name="myvote" value="no"> Nein</label> '
-            '<button id="cast" class="act" type="button">Meine Stimme abgeben</button>'
-            '<span id="voteres" style="margin-left:8px;color:#9fb4ff"></span>'
-            '</div>'
-        )
-        def _cast(evt, base_yes=yes, total=tot):
-            sel = document.querySelector('input[name="myvote"]:checked')
-            my_yes = 1 if (sel and sel.value == "yes") else 0
-            new_yes = base_yes + my_yes
-            result = "ADOPT" if new_yes >= 12 else "REJECT"
-            set_html("voteres", f"Ergebnis: {new_yes} / {total} JA → {result}")
-        by_id("cast").addEventListener("click", _cast)
-
-    # Buttons rendern & Clicks binden
+        el.innerHTML = f"Abstimmung: {yes} / {tot} Stimmen JA"
+    # Buttons
     acts = s.get("acts",[])
     html = "".join(f'<button class="act" data-key="{k}">{label}</button>' for (label,k) in acts)
     set_html("actions", html)
 
+    # Klicks binden (je Szene neu)
     for btn in document.querySelectorAll("#actions .act"):
         def _handler(evt, key=btn.getAttribute("data-key")):
             if key == "next":
@@ -344,14 +331,10 @@ def render_scene():
 
     # Info-Leiste zum Phase-Code
     info = PINFO.get(s.get("phase",""), [])
-    set_info(info if info else [])
+    if info:
+        set_info(info)
 
     render_phasebar()
-
-    # Fokus auf erste Aktion
-    first_btn = document.querySelector("#actions .act")
-    if first_btn:
-        first_btn.focus()
 
 def next_scene(evt=None):
     global idx
@@ -365,116 +348,32 @@ def skip_scene(evt=None):
     next_scene()
 
 def finish():
-    global auto_running
-    auto_running = False
-    by_id("auto").setAttribute("aria-pressed","false")
     set_text("sceneTitle","Ende")
     set_text("sceneText","Danke – Durchlauf abgeschlossen.")
     set_html("actions","")
     set_metrics(None)
-    clear_vote()
     render_phasebar()
 
-# ---------- Auto-Modus (Tempo & Timer) ----------
-auto_running = False
-
-def get_speed_factor() -> float:
-    try:
-        return float(by_id("speed").value) or 1.0
-    except Exception:
-        return 1.0
-
-def get_phase_seconds() -> int:
-    # Normalbetrieb: ~120s pro Phase; Speed skaliert linear (min. 5s)
-    return max(5, int(120 / get_speed_factor()))
-
-async def _timer_loop(duration: int):
-    """Füllt den Timer-Balken visuell über 'duration' Sekunden."""
-    barwrap = by_id("timer")
-    bar = barwrap.firstElementChild if barwrap else None
-    if barwrap:
-        barwrap.setAttribute("aria-hidden", "false")
-    t = 0
-    while auto_running and t < duration:
-        pct = int((t / duration) * 100)
-        if bar:
-            bar.style.width = f"{pct}%"
-        await asyncio.sleep(1)
-        t += 1
-    if bar:
-        bar.style.width = "0%"
-    if barwrap:
-        barwrap.setAttribute("aria-hidden", "true")
-
-async def _auto_loop():
-    """Automatischer Durchlauf – schaltet nach Ablauf der Phase weiter."""
-    global auto_running
-    while auto_running and 0 <= idx < len(SCENES):
-        dur = get_phase_seconds()
-        # Timer und Wartezeit parallel ausführen
-        timer_task = asyncio.create_task(_timer_loop(dur))
-        try:
-            await asyncio.sleep(dur)
-        finally:
-            try:
-                timer_task.cancel()
-            except Exception:
-                pass
-        if not auto_running:
-            break
-        next_scene()
-    auto_running = False
-    by_id("auto").setAttribute("aria-pressed","false")
-
-def toggle_auto(evt=None):
-    """Auto-Modus ein/aus."""
-    global auto_running
-    # Ohne laufende Scenes zuerst starten
-    if not SCENES:
-        start_run()
-    if idx < 0:
-        next_scene()
-    auto_running = not auto_running
-    by_id("auto").setAttribute("aria-pressed", "true" if auto_running else "false")
-    if auto_running:
-        asyncio.create_task(_auto_loop())
-
-# ---------- Start/Restart/Export ----------
 def restart(evt=None):
-    """Zufälliges Thema übernehmen und UI sauber zurücksetzen."""
-    global SCENES, idx, auto_running
-    auto_running = False
-    by_id("auto").setAttribute("aria-pressed","false")
+    """Zufälliges Thema übernehmen und UI zurücksetzen."""
     keys = list(PROBLEMS.keys())
     if keys:
         by_id("topic").value = random.choice(keys)
-    SCENES = []
-    idx = -1
-    clear_vote()
     set_text("sceneTitle","Neuer Durchlauf")
-    set_text("sceneText","Thema gewählt – bereit zum Start.")
+    set_text("sceneText","Thema gewählt, starte neu …")
     set_html("actions","")
     set_metrics(None)
     render_phasebar()
-
 def start_run(evt=None):
-    """Startet den Durchlauf – robust & mit Debug-Info in der Info-Box."""
-    global SCENES, idx, auto_running
+    """Startet den Durchlauf — robust & mit Debug-Ausgabe."""
+    global SCENES, idx, timer
     try:
-        # optionaler Seed
-        try:
-            seed_txt = by_id("seed").value.strip()
-            if seed_txt:
-                random.seed(int(seed_txt))
-        except Exception:
-            # Ignorieren, wenn kein valider Seed
-            pass
-
+        if timer:
+            window.clearTimeout(timer)
         topic = by_id("topic").value
-        SCENES = storyboard(topic)
+        speed = float(by_id("speed").value)
+        SCENES = storyboard(topic, speed)
         idx = -1
-        auto_running = False
-        by_id("auto").setAttribute("aria-pressed","false")
         set_info([
             f"Start geklickt · Thema: {topic}",
             f"Szenen erzeugt: {len(SCENES)}"
@@ -482,45 +381,6 @@ def start_run(evt=None):
         next_scene()
     except Exception as e:
         set_info([f"START-FEHLER: {e!r}"])
-
-def export_run(evt=None):
-    """Exportiert das aktuelle Storyboard als JSON-Download."""
-    try:
-        data = {
-            "topic": by_id("topic").value,
-            "scenes": SCENES,
-        }
-        blob = Blob.new([json.dumps(data, ensure_ascii=False, indent=2)], { "type": "application/json" })
-        url = URL.createObjectURL(blob)
-        a = document.createElement("a")
-        a.href = url
-        a.download = f"policy-sim_{by_id('topic').value.replace(' ','_')}.json"
-        a.click()
-        URL.revokeObjectURL(url)
-        set_info(["Export erstellt."])
-    except Exception as e:
-        set_info([f"EXPORT-FEHLER: {e!r}"])
-
-# ---------- Persistenz (Thema/Tempo) ----------
-def save_prefs():
-    try:
-        prefs = {"topic": by_id("topic").value, "speed": by_id("speed").value}
-        localStorage.setItem("policy-sim:prefs", json.dumps(prefs))
-    except Exception:
-        pass
-
-def load_prefs():
-    try:
-        raw = localStorage.getItem("policy-sim:prefs")
-        if raw:
-            p = json.loads(str(raw))
-            if "speed" in p:
-                by_id("speed").value = str(p["speed"])
-            if "topic" in p and p["topic"] in PROBLEMS:
-                by_id("topic").value = p["topic"]
-    except Exception:
-        pass
-
 # ---------- Bootstrap ----------
 def populate_topics():
     """Befüllt den Select #topic immer zuverlässig."""
@@ -532,13 +392,8 @@ def populate_topics():
 
 # Seite initialisieren
 populate_topics()
-load_prefs()
 set_info(["Dropdown geladen · Themen verfügbar: " + str(len(PROBLEMS))])
 document.title = "Policy-Sim ✅"
-
-# Präferenzen speichern, wenn Auswahl geändert wird
-by_id("topic").addEventListener("change", lambda evt: save_prefs())
-by_id("speed").addEventListener("change", lambda evt: save_prefs())
   </script>
 </body>
 </html>
